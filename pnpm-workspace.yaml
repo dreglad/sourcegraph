@@ -1,3 +1,4 @@
 packages:
   - 'client/*'
+  - 'client/*/webview'
   - 'dev/release'

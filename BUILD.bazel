@@ -1,3 +1,4 @@
+load("@aspect_bazel_lib//lib:copy_to_bin.bzl", "copy_to_bin")
 load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@aspect_rules_js//js:defs.bzl", "js_library")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_config")
@@ -26,6 +27,17 @@ js_library(
     ],
 )
 
+js_library(
+    name = "postcss_config_js",
+    srcs = ["postcss.config.js"],
+    data = [
+        "//:node_modules/autoprefixer",
+        "//:node_modules/postcss-custom-media",
+        "//:node_modules/postcss-focus-visible",
+        "//:node_modules/postcss-inset",
+    ],
+)
+
 ts_config(
     name = "tsconfig",
     src = "tsconfig.bazel.json",
@@ -33,5 +45,22 @@ ts_config(
     deps = [
         "//:node_modules/@sourcegraph/tsconfig",
         "//:tsconfig.json",
+    ],
+)
+
+js_library(
+    name = "jest_config",
+    testonly = True,
+    srcs = [
+        "jest.config.base.js",
+    ],
+    deps = [
+        "//:node_modules/@testing-library/jest-dom",
+        "//:node_modules/abort-controller",
+        "//:node_modules/babel-jest",
+        "//:node_modules/core-js",
+        "//:node_modules/identity-obj-proxy",
+        "//:node_modules/regenerator-runtime",
+        "//client/shared/dev:mock",
     ],
 )

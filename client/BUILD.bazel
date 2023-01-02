@@ -1,8 +1,23 @@
 # Configure gazelle for client/*
-#
-# gazelle:aspect_js_srcs_file_glob src/**/*.{js,ts,tsx,jsx}
-# gazelle:aspect_js_tests_file_glob src/**/*.{spec,test,fixture}.{js,ts,tsx,jsx}
-# gazelle:map_kind ts_project ts_project //dev:defs.bzl
 
-# TODO: will opt-in client/* projects one at a time, remove when done
-# gazelle:aspect_js disabled
+# Source files:
+# gazelle:aspect_js_files src/**/*.{ts,tsx}
+# gazelle:aspect_js_files globals.d.ts
+
+# Test files, fixtures, snapshots etc:
+# gazelle:aspect_js_test_files **/*.{spec,test,fixture}.{ts,tsx}
+# gazelle:aspect_js_test_files **/fixtures.{ts,tsx}
+# gazelle:aspect_js_test_files **/mock*.{ts,tsx}
+# gazelle:aspect_js_test_files **/mocks/**
+# gazelle:aspect_js_test_files **/testing/**
+# gazelle:aspect_js_test_files **/testutils/**
+# gazelle:aspect_js_test_files **/tests/**
+# gazelle:aspect_js_test_files **/__mocks__/**
+# gazelle:aspect_js_test_files **/__snapshots__/**
+
+# Rule configuration:
+# gazelle:map_kind ts_project ts_project //dev:defs.bzl
+# gazelle:map_kind npm_package npm_package //dev:defs.bzl
+
+# Enable JS generation throughout client/*
+# gazelle:aspect_js enabled

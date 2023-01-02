@@ -29,3 +29,8 @@ js_library(
         "batch_spec.schema.json",
     ],
 )
+
+filegroup(
+    name = "schema-json",
+    srcs = glob(["*.schema.json"]),
+)

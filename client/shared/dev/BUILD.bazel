@@ -1,4 +1,7 @@
 load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library")
+load("//dev:defs.bzl", "ts_project")
+
+# gazelle:ignore
 
 js_binary(
     name = "generate_schema",
@@ -9,8 +12,6 @@ js_binary(
     entry_point = "generateSchema.js",
     visibility = ["//client/shared:__pkg__"],
 )
-
-# gazelle:exclude .
 
 js_library(
     name = "extract_graphql_operation_codegen_plugin",
@@ -36,4 +37,48 @@ js_binary(
     ],
     entry_point = "generateGraphQlOperations.js",
     visibility = ["//client:__subpackages__"],
+)
+
+ts_project(
+    name = "dev_tests",
+    testonly = True,
+    srcs = [
+        "mockDomRect.ts",
+        "mockMatchMedia.ts",
+        "mockReactVisibilitySensor.tsx",
+        "mockResizeObserver.ts",
+        "mockSentryBrowser.ts",
+        "mockUniqueId.ts",
+        "reactCleanup.ts",  #keep
+        "setLinkComponentForTest.ts",  #keep
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//:node_modules/@sentry/browser",
+        "//:node_modules/@sourcegraph/wildcard",  #keep
+        "//:node_modules/@testing-library/react",  #keep
+        "//:node_modules/@types/node",  #keep
+        "//:node_modules/@types/react",
+        "//:node_modules/react",
+        "//:node_modules/react-visibility-sensor",  #keep
+        "//:node_modules/resize-observer-polyfill",
+    ],
+)
+
+js_library(
+    name = "mock",
+    testonly = True,
+    srcs = [
+        "fetch.js",
+        "jest-environment.js",
+        "jestGlobalSetup.js",
+        "mockDate.js",
+        ":dev_tests",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:node_modules/@peculiar/webcrypto",
+        "//:node_modules/jest-environment-jsdom",
+        "//:node_modules/node-fetch",
+    ],
 )
