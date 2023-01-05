@@ -11,14 +11,6 @@
     function createInstance(target: HTMLElement, content: HTMLElement) {
         return createPopper(target, content, {
             placement,
-            modifiers: [
-                {
-                    name: 'offset',
-                    options: {
-                        offset: [0, 8],
-                    },
-                },
-            ],
         })
     }
 

@@ -26,6 +26,7 @@
     import { settings } from '$lib/stores'
     import { searchTypes } from '$lib/search/sidebar'
     import SymbolSearchResult from './SymbolSearchResult.svelte'
+    import StreamingProgress from './StreamingProgress.svelte'
 
     export let query: string
     export let stream: Observable<AggregateStreamingSearchResults | undefined>
@@ -71,7 +72,7 @@
         cache.set(query, { count, expanded: expandedSet })
     })
 
-    $: matchCount = $stream ? $stream.progress.matchCount + ($stream.progress.skipped.length > 0 ? '+' : '') : ''
+    $: progress = $stream?.progress
 
     function loadMore(event: { detail: boolean }) {
         if (event.detail) {
@@ -87,6 +88,18 @@
             await tick()
             submitSearch($queryState)
         }
+    }
+
+    // FIXME: Not a great solution since it relies on implementation details of
+    // the progress component
+    async function onResubmitQuery(event: SubmitEvent) {
+        const filters = Array.from(event.currentTarget?.querySelectorAll('[name="query"]') ?? [])
+            .filter(input => input.checked)
+            .map(input => input.value)
+            .join(' ')
+        queryState.setQuery(query => query + ' ' + filters)
+        await tick()
+        submitSearch($queryState)
     }
 </script>
 
@@ -104,8 +117,8 @@
             {:else if !loading && resultsToShow}
                 <div class="main">
                     <aside class="stats mb-2">
-                        {#if matchCount}
-                            {matchCount} results in {($stream?.progress.durationMs / 1000).toFixed(2)}s
+                        {#if progress}
+                            <StreamingProgress {progress} on:submit={onResubmitQuery} />
                         {/if}
                     </aside>
                     <ol>
