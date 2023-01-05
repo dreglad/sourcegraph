@@ -133,7 +133,6 @@ interface State extends BreadcrumbSetters {
      * The fetched org or an error if an error occurred; undefined while loading.
      */
     orgOrError?: OrgAreaOrganizationFields | ErrorLike
-    newMembersInviteEnabled: boolean
 }
 
 /**
@@ -162,7 +161,6 @@ export interface OrgAreaRouteContext
     orgSettingsSideBarItems: OrgSettingsSidebarItems
     orgSettingsAreaRoutes: readonly OrgSettingsAreaRoute[]
 
-    newMembersInviteEnabled: boolean
 }
 
 /**
@@ -180,7 +178,6 @@ export class OrgArea extends React.Component<OrgAreaProps> {
         this.state = {
             setBreadcrumb: props.setBreadcrumb,
             useBreadcrumb: props.useBreadcrumb,
-            newMembersInviteEnabled: false,
         }
     }
 
@@ -206,25 +203,6 @@ export class OrgArea extends React.Component<OrgAreaProps> {
                         )
                     })
                 )
-                .pipe(
-                    switchMap(state => {
-                        const flagObservable =
-                            state.orgOrError && !isErrorLike(state.orgOrError)
-                                ? queryMembersFFlag({
-                                      orgID: state.orgOrError.id,
-                                      flagName: ORG_CODE_FEATURE_FLAG_EMAIL_INVITE,
-                                  })
-                                : of(false)
-                        return flagObservable.pipe(
-                            catchError((): [boolean] => [false]), // set flag to false in case of error reading it
-                            map(newMembersInviteEnabled =>
-                                !state.orgOrError
-                                    ? { newMembersInviteEnabled }
-                                    : { orgOrError: state.orgOrError, newMembersInviteEnabled }
-                            )
-                        )
-                    })
-                )
                 .subscribe(
                     stateUpdate => {
                         if (stateUpdate.orgOrError && !isErrorLike(stateUpdate.orgOrError)) {
@@ -237,7 +215,6 @@ export class OrgArea extends React.Component<OrgAreaProps> {
                                 useBreadcrumb: childBreadcrumbSetters.useBreadcrumb,
                                 setBreadcrumb: childBreadcrumbSetters.setBreadcrumb,
                                 orgOrError: stateUpdate.orgOrError,
-                                newMembersInviteEnabled: stateUpdate.newMembersInviteEnabled,
                             })
                         } else {
                             this.setState(stateUpdate)
@@ -288,7 +265,6 @@ export class OrgArea extends React.Component<OrgAreaProps> {
             breadcrumbs: this.props.breadcrumbs,
             setBreadcrumb: this.state.setBreadcrumb,
             useBreadcrumb: this.state.useBreadcrumb,
-            newMembersInviteEnabled: this.state.newMembersInviteEnabled,
             orgSettingsAreaRoutes: this.props.orgSettingsAreaRoutes,
             orgSettingsSideBarItems: this.props.orgSettingsSideBarItems,
         }
