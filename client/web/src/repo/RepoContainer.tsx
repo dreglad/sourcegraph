@@ -337,6 +337,7 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                 repo: repoOrError,
                 resolvedRevisionOrError,
                 onDidUpdateExternalLinks: setExternalLinks,
+                repoName: repoName,
             }
 
             return [
@@ -345,6 +346,7 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                         condition(repoContainerContext) && (
                             (isRevisionNotFoundErrorLike(repoOrError as ErrorLike)) ? (
                                 <RepoContainerError
+                                    key="hardcoded-key"
                                     repoName={repoName}
                                     viewerCanAdminister={viewerCanAdminister}
                                     repoFetchError={repoOrError as ErrorLike}
@@ -364,6 +366,7 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                             )
                         )
                 ),
+                <Route key="hardcoded-key" component={RepoPageNotFound} />
             ]
         }
 
@@ -395,7 +398,6 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                         />
                     )
             ),
-            <Route key="hardcoded-key" component={RepoPageNotFound} />,
         ]
     }
 
@@ -513,8 +515,8 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                                 )}
                             />
                         ))}
+                        {getRepoSettingsContainerContextRoutes()}
                         {getRepoContainerContextRoutes()}
-                        {/*{getRepoSettingsContainerContextRoutes()}*/}
                     </Switch>
                 </Suspense>
             </ErrorBoundary>
