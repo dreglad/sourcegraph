@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from '$app/stores'
+    import Icon from '$lib/Icon.svelte'
     import logo from '$lib/images/sourcegraph-mark.svg'
     import UserAvatar from '$lib/UserAvatar.svelte'
     import { mdiBookOutline, mdiChartBar, mdiMagnify } from '@mdi/js'
@@ -16,9 +17,8 @@
         <ul>
             <li aria-current={$page.url.pathname === '/search' ? 'page' : undefined}>
                 <a href="/search">
-                    <svg aria-hidden="true" viewBox="0 0 25 25">
-                        <path d={mdiMagnify} />
-                    </svg>
+                    <Icon svgPath={mdiMagnify} inline />
+                    &nbsp;
                     <span>Code search</span>
                 </a>
             </li>

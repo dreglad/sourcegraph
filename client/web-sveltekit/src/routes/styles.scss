@@ -15,23 +15,7 @@
 @import '@sourcegraph/branded/src/global-styles/dropdown.scss';
 
 :root {
-    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --code-font-family: sfmono-regular, consolas, menlo, dejavu sans mono, monospace;
-    --code-font-size: #{(12/14)}em;
-
-    --body-bg: var(--gray-01);
-    --color-bg-1: white;
-    --color-text: rgba(0, 0, 0, 0.7);
-
-    --border-color-2: var(--gray-04);
     --navbar-height: 2.5rem;
-
-    --brand-secondary: var(--purple);
-
-    // Search
-    --search-query-text-color: var(--gray-12);
-
     font-family: var(--font-body);
     color: var(--color-text);
 }

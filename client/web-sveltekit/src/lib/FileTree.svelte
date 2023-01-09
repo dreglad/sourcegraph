@@ -29,7 +29,7 @@
                 <span>
                     <Icon svgPath={entry.isDirectory ? mdiFolderOutline : mdiFileDocumentOutline} inline />
                 </span>
-                {entry.name}
+                <span class="name">{entry.name}</span>
             </a>
             {#if commitData}
                 <span class="ml-5">{commitData}</span>
@@ -50,15 +50,28 @@
 
     li {
         display: flex;
-    }
 
-    a {
-        white-space: nowrap;
-        color: var(--body-color);
-    }
+        a {
+            flex: 1;
+            white-space: nowrap;
+            color: var(--body-color);
+            text-decoration: none;
+            padding: 0.25rem;
+        }
 
-    .active {
-        background-color: var(--color-bg-3);
+        &:hover {
+            a {
+                background-color: var(--color-bg-2);
+            }
+
+            .name {
+                text-decoration: underline;
+            }
+        }
+
+        &.active a {
+            background-color: var(--color-bg-3);
+        }
     }
 
     span {

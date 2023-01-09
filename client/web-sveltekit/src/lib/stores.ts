@@ -9,13 +9,14 @@ export interface SourcegraphContext {
     settings: Readable<SettingsCascade['final'] | null>
     user: Readable<AuthenticatedUser | null>
     platformContext: Readable<PlatformContext | null>
+    isLightTheme: Readable<boolean>
 }
 
 export const KEY = '__sourcegraph__'
 
 function getStores() {
-    const { settings, user, platformContext } = getContext<SourcegraphContext>(KEY)
-    return { settings, user, platformContext }
+    const { settings, user, platformContext, isLightTheme } = getContext<SourcegraphContext>(KEY)
+    return { settings, user, platformContext, isLightTheme }
 }
 
 export const user = {
@@ -36,6 +37,13 @@ export const platformContext = {
     subscribe(fn: (platformContext: PlatformContext | null) => void) {
         const { platformContext } = getStores()
         return platformContext.subscribe(fn)
+    },
+}
+
+export const isLightTheme = {
+    subscribe(fn: (isLightTheme: boolean) => void) {
+        const { isLightTheme } = getStores()
+        return isLightTheme.subscribe(fn)
     },
 }
 

@@ -27,6 +27,7 @@
     import { searchTypes } from '$lib/search/sidebar'
     import SymbolSearchResult from './SymbolSearchResult.svelte'
     import StreamingProgress from './StreamingProgress.svelte'
+    import type { SidebarFilter } from '$lib/search/utils'
 
     export let query: string
     export let stream: Observable<AggregateStreamingSearchResults | undefined>
@@ -39,7 +40,10 @@
     $: loading = $stream && !$stream.progress.done
     $: results = $stream && $stream.results
     $: filters = $stream && $stream.filters
-    $: langFilters = filters?.filter(filter => filter.kind === 'lang')
+    $: langFilters =
+        filters
+            ?.filter(filter => filter.kind === 'lang')
+            .map((filter): SidebarFilter => ({ ...filter, runImmediately: true })) ?? []
 
     // Logic for maintaining list state (scroll position, rendered items, open
     // items) for backwards navigation.
@@ -139,7 +143,7 @@
                 <aside class="sidebar">
                     <h4>Filters</h4>
                     <Section items={searchTypes} title="Search types" on:click={updateQuery} />
-                    {#if langFilters && langFilters.length > 1}
+                    {#if langFilters.length > 1}
                         <Section items={langFilters} title="Languages" on:click={updateQuery} />
                     {/if}
                 </aside>

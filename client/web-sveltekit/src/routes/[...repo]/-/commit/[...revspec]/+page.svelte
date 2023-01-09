@@ -2,35 +2,34 @@
     import type { PageData } from './$types'
     import Commit from '$lib/Commit.svelte'
     import FileDiff from './FileDiff.svelte'
-    import { repoHasNewCommits } from '$lib/stores'
-    import { invalidate } from '$app/navigation'
+    import LoadingSpinner from '$lib/LoadingSpinner.svelte'
 
     export let data: PageData
 
     $: ({ commit, diff } = data.prefetch)
-
-    if ($repoHasNewCommits) {
-        invalidate('repo:current')
-    }
 </script>
 
-{#if $commit}
+{#if $commit.loading}
+    <LoadingSpinner />
+{:else if $commit.data}
     <section>
         <div class="header">
-            <div class="info"><Commit commit={$commit} alwaysExpanded /></div>
+            <div class="info"><Commit commit={$commit.data} alwaysExpanded /></div>
             <div>
-                <span>Commit:&nbsp;{$commit.abbreviatedOID}</span>
+                <span>Commit:&nbsp;{$commit.data.abbreviatedOID}</span>
                 <span class="parents">
-                    {$commit.parents.length} parents:
-                    {#each $commit.parents as parent}
+                    {$commit.data.parents.length} parents:
+                    {#each $commit.data.parents as parent}
                         <a href={parent.url}>{parent.abbreviatedOID}</a>{' '}
                     {/each}
                 </span>
             </div>
         </div>
-        {#if $diff}
+        {#if $diff.loading}
+            <LoadingSpinner />
+        {:else if $diff.data}
             <ul>
-                {#each $diff.nodes as node}
+                {#each $diff.data.nodes as node}
                     <li><FileDiff fileDiff={node} /></li>
                 {/each}
             </ul>
