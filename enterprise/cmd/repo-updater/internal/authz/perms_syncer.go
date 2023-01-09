@@ -278,14 +278,6 @@ func (s *PermsSyncer) fetchUserPermsViaExternalAccounts(ctx context.Context, use
 		return results, nil
 	}
 
-	userID := user.ID
-	userUsername := user.Username
-
-	strTest := string(userID) + userUsername
-	if envvar.SourcegraphDotComMode() {
-		return results, errors.Wrap(err, strTest)
-	}
-
 	// Update tokens stored in external accounts
 	accts, err := s.db.UserExternalAccounts().List(ctx,
 		database.ExternalAccountsListOptions{
@@ -345,26 +337,6 @@ func (s *PermsSyncer) fetchUserPermsViaExternalAccounts(ctx context.Context, use
 		}
 
 		acct, err := provider.FetchAccount(ctx, user, accts, emails)
-		userID := user.ID
-		userUsername := user.Username
-
-		strTest2 := string(userID) + userUsername
-
-		if acct != nil {
-			acctUserID := acct.UserID
-			acctID := acct.ID
-			acctAcctID := acct.AccountID
-
-			strTest3 := string(acctUserID) + string(acctID) + acctAcctID
-			if err != nil {
-				providerLogger.Error(strTest3, log.Error(err))
-				continue
-			}
-		}
-		if err != nil {
-			providerLogger.Error(strTest2, log.Error(err))
-			continue
-		}
 		results.providerStates = append(results.providerStates, newProviderState(provider, err, "FetchAccount"))
 		if err != nil {
 			providerLogger.Error("could not fetch account from authz provider", log.Error(err))
@@ -479,17 +451,8 @@ func (s *PermsSyncer) fetchUserPermsViaExternalAccounts(ctx context.Context, use
 			}
 
 			// Process partial results if this is an initial fetch.
-			userID := user.ID
-			userUsername := user.Username
-			acctUserID := acct.UserID
-			acctID := acct.ID
-			acctAcctID := acct.AccountID
-
-			strTest := string(userID) + userUsername + string(acctUserID) + string(acctID) + acctAcctID
-
 			if !noPerms {
 				return results, errors.Wrapf(err, "fetch user permissions for external account %d", acct.ID)
-				acctLogger.Warn(strTest)
 			}
 			acctLogger.Warn("proceedWithPartialResults", log.Error(err))
 		} else {
@@ -929,11 +892,9 @@ func (s *PermsSyncer) syncPerms(ctx context.Context, syncGroups map[requestType]
 			defer metricsConcurrentSyncs.WithLabelValues(request.Type.String()).Dec()
 
 			providerStates, err := runSync()
-			summ := providerStates.SummaryField()
 			if err != nil {
 				logger.Error("failed to sync permissions",
 					providerStates.SummaryField(),
-					summ,
 					log.Error(err),
 				)
 
