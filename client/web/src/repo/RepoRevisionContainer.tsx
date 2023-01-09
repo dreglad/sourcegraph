@@ -3,7 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import * as H from 'history'
 import { Route, RouteComponentProps, Switch } from 'react-router'
 
-import { isErrorLike } from '@sourcegraph/common'
+import { ErrorLike, isErrorLike } from '@sourcegraph/common'
 import { StreamingSearchResultsListProps, CopyPathAction } from '@sourcegraph/search-ui'
 import { ExtensionsControllerProps } from '@sourcegraph/shared/src/extensions/controller'
 import { PlatformContextProps } from '@sourcegraph/shared/src/platform/context'
@@ -38,6 +38,8 @@ import { RepoSettingsAreaRoute } from './settings/RepoSettingsArea'
 import { RepoSettingsSideBarGroup } from './settings/RepoSettingsSidebar'
 
 import styles from './RepoRevisionContainer.module.scss'
+import {isRevisionNotFoundErrorLike} from "@sourcegraph/shared/src/backend/errors";
+import {RepoContainerError} from "./RepoContainerError";
 
 /** Props passed to sub-routes of {@link RepoRevisionContainer}. */
 export interface RepoRevisionContainerContext
@@ -126,13 +128,13 @@ interface RepoRevisionBreadcrumbProps extends Pick<RepoRevisionContainerProps, '
 
 export const RepoRevisionContainerBreadcrumb: React.FunctionComponent<
     React.PropsWithChildren<RepoRevisionBreadcrumbProps>
-    > = ({ revision, resolvedRevision, repoName, repo }) => {
+> = ({ revision, resolvedRevision, repoName, repo }) => {
     const [popoverOpen, setPopoverOpen] = useState(false)
     const togglePopover = useCallback(() => setPopoverOpen(previous => !previous), [])
 
     const revisionLabel = (revision && revision === resolvedRevision?.commitID
-            ? resolvedRevision?.commitID.slice(0, 7)
-            : revision.slice(0, 7)) ||
+        ? resolvedRevision?.commitID.slice(0, 7)
+        : revision.slice(0, 7)) ||
         resolvedRevision?.defaultBranch || <LoadingSpinner />
 
     const isPopoverContentReady = repo && resolvedRevision
@@ -179,9 +181,9 @@ export const RepoRevisionContainerBreadcrumb: React.FunctionComponent<
  * blob and tree pages are revisioned, but the repository settings page is not.)
  */
 export const RepoRevisionContainer: React.FunctionComponent<React.PropsWithChildren<RepoRevisionContainerProps>> = ({
-                                                                                                                        useBreadcrumb,
-                                                                                                                        ...props
-                                                                                                                    }) => {
+    useBreadcrumb,
+    ...props
+}) => {
     const breadcrumbSetters = useBreadcrumb(
         useMemo(() => {
             if (isErrorLike(props.resolvedRevision)) {
@@ -212,6 +214,19 @@ export const RepoRevisionContainer: React.FunctionComponent<React.PropsWithChild
     const resolvedRevision = props.resolvedRevision
 
     const { repoName, filePath } = parseBrowserRepoURL(location.pathname)
+
+    const viewerCanAdminister = !!props.authenticatedUser && props.authenticatedUser.siteAdmin
+
+    const repoOrError = props.repo
+
+    if (isErrorLike(props.resolvedRevision)) {
+        return (
+            <RepoContainerError
+                repoName={repoName}
+                viewerCanAdminister={viewerCanAdminister}
+                repoFetchError={repoOrError as ErrorLike}
+            />
+        )}
 
     return (
         <>
