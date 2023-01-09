@@ -3,7 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import * as H from 'history'
 import { Route, RouteComponentProps, Switch } from 'react-router'
 
-import { isErrorLike } from '@sourcegraph/common'
+import { ErrorLike, isErrorLike } from '@sourcegraph/common'
 import { StreamingSearchResultsListProps, CopyPathAction } from '@sourcegraph/search-ui'
 import { ExtensionsControllerProps } from '@sourcegraph/shared/src/extensions/controller'
 import { PlatformContextProps } from '@sourcegraph/shared/src/platform/context'
@@ -38,6 +38,8 @@ import { RepoSettingsAreaRoute } from './settings/RepoSettingsArea'
 import { RepoSettingsSideBarGroup } from './settings/RepoSettingsSidebar'
 
 import styles from './RepoRevisionContainer.module.scss'
+import {isRevisionNotFoundErrorLike} from "@sourcegraph/shared/src/backend/errors";
+import {RepoContainerError} from "./RepoContainerError";
 
 /** Props passed to sub-routes of {@link RepoRevisionContainer}. */
 export interface RepoRevisionContainerContext
@@ -212,6 +214,19 @@ export const RepoRevisionContainer: React.FunctionComponent<React.PropsWithChild
     const resolvedRevision = props.resolvedRevision
 
     const { repoName, filePath } = parseBrowserRepoURL(location.pathname)
+
+    const viewerCanAdminister = !!props.authenticatedUser && props.authenticatedUser.siteAdmin
+
+    const repoOrError = props.repo
+
+    if (isErrorLike(props.resolvedRevision)) {
+        return (
+            <RepoContainerError
+                repoName={repoName}
+                viewerCanAdminister={viewerCanAdminister}
+                repoFetchError={repoOrError as ErrorLike}
+            />
+        )}
 
     return (
         <>

@@ -42,6 +42,7 @@ interface Props extends RouteComponentProps<{}>, BreadcrumbSetters, ThemeProps, 
     repoSettingsAreaRoutes: readonly RepoSettingsAreaRoute[]
     repoSettingsSidebarGroups: RepoSettingsSideBarGroups
     repo: RepositoryFields
+    repoName: string
     authenticatedUser: AuthenticatedUser | null
 }
 
@@ -54,7 +55,7 @@ export const RepoSettingsArea: React.FunctionComponent<React.PropsWithChildren<P
 
     ...props
 }) => {
-    const repoName = props.repo.name
+    const repoName = props.repoName
     const repoOrError = useObservable(
         useMemo(
             () => fetchSettingsAreaRepository(repoName).pipe(catchError(error => of<ErrorLike>(asError(error)))),
