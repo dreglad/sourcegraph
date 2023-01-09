@@ -53,7 +53,7 @@ import {
     RepoRevisionContainerContext,
     RepoRevisionContainerRoute,
 } from './RepoRevisionContainer'
-import {commitsPath, compareSpecPath} from './routes'
+import { commitsPath, compareSpecPath } from './routes'
 import { RepoSettingsAreaRoute } from './settings/RepoSettingsArea'
 import { RepoSettingsSideBarGroup } from './settings/RepoSettingsSidebar'
 
