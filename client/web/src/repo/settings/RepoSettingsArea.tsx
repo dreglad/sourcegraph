@@ -55,9 +55,6 @@ export const RepoSettingsArea: React.FunctionComponent<React.PropsWithChildren<P
 
     ...props
 }) => {
-
-    // TODO: use props.repo first?
-
     const repoName = props.repoName
     const repoOrError = useObservable(
         useMemo(
