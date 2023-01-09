@@ -126,13 +126,13 @@ interface RepoRevisionBreadcrumbProps extends Pick<RepoRevisionContainerProps, '
 
 export const RepoRevisionContainerBreadcrumb: React.FunctionComponent<
     React.PropsWithChildren<RepoRevisionBreadcrumbProps>
-    > = ({ revision, resolvedRevision, repoName, repo }) => {
+> = ({ revision, resolvedRevision, repoName, repo }) => {
     const [popoverOpen, setPopoverOpen] = useState(false)
     const togglePopover = useCallback(() => setPopoverOpen(previous => !previous), [])
 
     const revisionLabel = (revision && revision === resolvedRevision?.commitID
-            ? resolvedRevision?.commitID.slice(0, 7)
-            : revision.slice(0, 7)) ||
+        ? resolvedRevision?.commitID.slice(0, 7)
+        : revision.slice(0, 7)) ||
         resolvedRevision?.defaultBranch || <LoadingSpinner />
 
     const isPopoverContentReady = repo && resolvedRevision
@@ -179,9 +179,9 @@ export const RepoRevisionContainerBreadcrumb: React.FunctionComponent<
  * blob and tree pages are revisioned, but the repository settings page is not.)
  */
 export const RepoRevisionContainer: React.FunctionComponent<React.PropsWithChildren<RepoRevisionContainerProps>> = ({
-                                                                                                                        useBreadcrumb,
-                                                                                                                        ...props
-                                                                                                                    }) => {
+    useBreadcrumb,
+    ...props
+}) => {
     const breadcrumbSetters = useBreadcrumb(
         useMemo(() => {
             if (isErrorLike(props.resolvedRevision)) {
