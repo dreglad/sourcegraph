@@ -293,7 +293,12 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
 
     const viewerCanAdminister = !!props.authenticatedUser && props.authenticatedUser.siteAdmin
 
-    if ((isErrorLike(repoOrError) || isErrorLike(resolvedRevisionOrError)) && !isRevisionNotFoundErrorLike(repoOrError as ErrorLike)) {
+    const isError = isErrorLike(repoOrError) || isErrorLike(resolvedRevisionOrError)
+
+    // if revision for given repo does not resolve then we still proceed to render settings routes
+    const repoSettingsOnly = isError && isRevisionNotFoundErrorLike(repoOrError as ErrorLike)
+
+    if (isError && !repoSettingsOnly) {
         return (
             <RepoContainerError
                 repoName={repoName}
@@ -342,7 +347,7 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                 ...props.repoContainerRoutes.map(
                     ({ path, render, exact, condition = () => true }) =>
                         condition(repoContainerContext) && (
-                            (isRevisionNotFoundErrorLike(repoOrError as ErrorLike)) ? (
+                            (repoSettingsOnly) ? (
                                 <RepoContainerError
                                     key="hardcoded-key"
                                     repoName={repoName}
@@ -494,13 +499,6 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                                 key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
                                 exact={routePath === ''}
                                 render={routeComponentProps => (
-                                    // (isRevisionNotFoundErrorLike(repoOrError as ErrorLike)) ? (
-                                    //     <RepoContainerError
-                                    //         repoName={repoName}
-                                    //         viewerCanAdminister={viewerCanAdminister}
-                                    //         repoFetchError={repoOrError as ErrorLike}
-                                    //     />
-                                    // ) : (
                                         <RepoRevisionContainer
                                             {...routeComponentProps}
                                             {...repoRevisionContainerContext}
