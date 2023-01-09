@@ -499,6 +499,14 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                                 key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
                                 exact={routePath === ''}
                                 render={routeComponentProps => (
+                                    (repoSettingsOnly) ? (
+                                        <RepoContainerError
+                                            key="hardcoded-key"
+                                            repoName={repoName}
+                                            viewerCanAdminister={viewerCanAdminister}
+                                            repoFetchError={repoOrError as ErrorLike}
+                                        />
+                                    ) : (
                                         <RepoRevisionContainer
                                             {...routeComponentProps}
                                             {...repoRevisionContainerContext}
@@ -507,7 +515,7 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                                             // must exactly match how the revision was encoded in the URL
                                             routePrefix={`${repoMatchURL}${rawRevision ? `@${rawRevision}` : ''}`}
                                         />
-                                  //  )
+                                    )
                                 )}
                             />
                         ))}

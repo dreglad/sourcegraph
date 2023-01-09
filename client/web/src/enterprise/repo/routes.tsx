@@ -2,9 +2,9 @@ import { Redirect } from 'react-router'
 
 import { lazyComponent } from '@sourcegraph/shared/src/util/lazyComponent'
 
-import {RepoContainerRoute} from '../../repo/RepoContainer'
+import { RepoContainerRoute } from '../../repo/RepoContainer'
 import { RepoRevisionContainerRoute } from '../../repo/RepoRevisionContainer'
-import {repoContainerRoutes, repoSettingsContainerRoutes, repoRevisionContainerRoutes} from '../../repo/routes'
+import { repoContainerRoutes, repoSettingsContainerRoutes, repoRevisionContainerRoutes } from '../../repo/routes'
 
 const RepositoryCodeIntelArea = lazyComponent(
     () => import('../codeintel/repo/RepositoryCodeIntelArea'),
