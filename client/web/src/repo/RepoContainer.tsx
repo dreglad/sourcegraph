@@ -102,8 +102,6 @@ export interface RepoContainerContext
 /** A sub-route of {@link RepoContainer}. */
 export interface RepoContainerRoute extends RouteDescriptor<RepoContainerContext> {}
 
-//export interface RepoSettingsContainerRoute extends RouteDescriptor<RepoContainerContext> {}
-
 const RepoPageNotFound: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => (
     <HeroPage icon={MapSearchIcon} title="404: Not Found" subtitle="The repository page was not found." />
 )
