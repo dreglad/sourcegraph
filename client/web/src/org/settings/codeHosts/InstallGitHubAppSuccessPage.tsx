@@ -8,7 +8,6 @@ import { SourcegraphIcon, Card, CardBody, Link, H2, Text, Icon } from '@sourcegr
 
 import { Page } from '../../../components/Page'
 import { PageTitle } from '../../../components/PageTitle'
-import { useQueryStringParameters } from '../../members/utils'
 
 import styles from './InstallGitHubAppSuccessPage.module.scss'
 

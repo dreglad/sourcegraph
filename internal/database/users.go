@@ -885,7 +885,7 @@ func (u *userStore) ListByOrg(ctx context.Context, orgID int32, paginationArgs *
 		where = append(where, p.Where)
 	}
 
-	q := sqlf.Sprintf("WHERE %s", sqlf.Join(where, "AND"))
+	q := sqlf.Sprintf("WHERE u.deleted_at IS NULL AND %s", sqlf.Join(where, "AND"))
 	q = p.AppendOrderToQuery(q)
 	q = p.AppendLimitToQuery(q)
 

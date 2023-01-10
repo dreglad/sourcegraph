@@ -21,16 +21,9 @@ import { BreadcrumbsProps, BreadcrumbSetters } from '../../components/Breadcrumb
 import { ErrorBoundary } from '../../components/ErrorBoundary'
 import { HeroPage } from '../../components/HeroPage'
 import { Page } from '../../components/Page'
-import {
-    OrganizationResult,
-    OrganizationVariables,
-    OrgAreaOrganizationFields,
-    OrgFeatureFlagValueResult,
-    OrgFeatureFlagValueVariables,
-} from '../../graphql-operations'
+import { OrganizationResult, OrganizationVariables, OrgAreaOrganizationFields } from '../../graphql-operations'
 import { NamespaceProps } from '../../namespaces'
 import { RouteDescriptor } from '../../util/contributions'
-import { ORG_CODE_FEATURE_FLAG_EMAIL_INVITE } from '../backend'
 import { OrgSettingsAreaRoute } from '../settings/OrgSettingsArea'
 import { OrgSettingsSidebarItems } from '../settings/OrgSettingsSidebar'
 
@@ -81,20 +74,6 @@ function queryOrganization(args: {
             }
             return data.organization
         })
-    )
-}
-
-function queryMembersFFlag(args: { orgID: string; flagName: string }): Observable<boolean> {
-    return requestGraphQL<OrgFeatureFlagValueResult, OrgFeatureFlagValueVariables>(
-        gql`
-            query OrgFeatureFlagValue($orgID: ID!, $flagName: String!) {
-                organizationFeatureFlagValue(orgID: $orgID, flagName: $flagName)
-            }
-        `,
-        args
-    ).pipe(
-        map(dataOrThrowErrors),
-        map(data => data.organizationFeatureFlagValue)
     )
 }
 
@@ -160,7 +139,6 @@ export interface OrgAreaRouteContext
 
     orgSettingsSideBarItems: OrgSettingsSidebarItems
     orgSettingsAreaRoutes: readonly OrgSettingsAreaRoute[]
-
 }
 
 /**

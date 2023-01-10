@@ -1,29 +1,40 @@
 import * as React from 'react'
 
 import classNames from 'classnames'
-import * as H from 'history'
-import { RouteComponentProps } from 'react-router'
-import { Observable, Subject, Subscription } from 'rxjs'
-import { catchError, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
+import { RouteComponentProps, useHistory } from 'react-router'
 
-import { asError, createAggregateError, ErrorLike, isErrorLike, logger } from '@sourcegraph/common'
-import { gql } from '@sourcegraph/http-client'
-import { Container, PageHeader, Button, Link, Alert, ErrorAlert } from '@sourcegraph/wildcard'
+import { pluralize } from '@sourcegraph/common'
+import { useMutation } from '@sourcegraph/http-client'
+import {
+    Container,
+    PageHeader,
+    Button,
+    Input,
+    Link,
+    LoadingSpinner,
+    Alert,
+    ErrorAlert,
+    PageSwitcher,
+    Tooltip,
+    useDebounce,
+} from '@sourcegraph/wildcard'
 
 import { AuthenticatedUser } from '../../../auth'
-import { requestGraphQL } from '../../../backend/graphql'
-import { FilteredConnection } from '../../../components/FilteredConnection'
+import { usePageSwitcherPagination } from '../../../components/FilteredConnection/hooks/usePageSwitcherPagination'
 import { PageTitle } from '../../../components/PageTitle'
 import {
     OrgAreaOrganizationFields,
     OrganizationSettingsMembersResult,
     OrganizationSettingsMembersVariables,
     OrganizationMemberNode,
+    RemoveUserFromOrganizationResult,
+    RemoveUserFromOrganizationVariables,
 } from '../../../graphql-operations'
 import { eventLogger } from '../../../tracking/eventLogger'
 import { userURL } from '../../../user'
+import { UserAvatar } from '../../../user/UserAvatar'
 import { OrgAreaRouteContext } from '../../area/OrgArea'
-import { removeUserFromOrganization } from '../../backend'
+import { ORGANIZATION_MEMBERS_QUERY, REMOVE_USER_FROM_ORGANIZATION_QUERY } from '../../backend'
 
 import { InviteForm } from './InviteForm'
 
@@ -34,7 +45,10 @@ interface UserNodeProps {
     node: OrganizationMemberNode
 
     /** The organization being displayed. */
-    org: OrgAreaOrganization
+    org: OrgAreaOrganizationFields
+
+    /** If there is only one member in the organization. */
+    hasOneMember: boolean
 
     /** The currently authenticated user. */
     authenticatedUser: AuthenticatedUser | null
@@ -42,290 +56,222 @@ interface UserNodeProps {
     /** Called when the user is updated by an action in this list item. */
     onDidUpdate?: (didRemoveSelf: boolean) => void
     blockRemoveOnlyMember?: () => boolean
-    history: H.History
 }
 
-interface HasOneMember {
-    hasOneMember: boolean
-}
+const UserNode: React.FunctionComponent<UserNodeProps> = ({
+    node,
+    org,
+    authenticatedUser,
+    hasOneMember,
+    onDidUpdate,
+    blockRemoveOnlyMember,
+}) => {
+    const isSelf = React.useMemo(() => node.id === authenticatedUser?.id, [node, authenticatedUser])
+    const [removeUserFromOrganisation, { error, loading }] = useMutation<
+        RemoveUserFromOrganizationResult,
+        RemoveUserFromOrganizationVariables
+    >(REMOVE_USER_FROM_ORGANIZATION_QUERY, {
+        variables: { user: node.id, organization: org.id },
+        onCompleted: () => onDidUpdate?.(isSelf),
+    })
 
-type OrgAreaOrganization = OrgAreaOrganizationFields & HasOneMember
+    const remove = (): any => {
+        if (hasOneMember && blockRemoveOnlyMember?.()) {
+            return
+        }
 
-type OrgNode = Extract<OrganizationSettingsMembersResult['node'], { __typename?: 'Org' }>
-
-interface UserNodeState {
-    /** Undefined means in progress, null means done or not started. */
-    removalOrError?: null | ErrorLike
-}
-
-class UserNode extends React.PureComponent<UserNodeProps, UserNodeState> {
-    public state: UserNodeState = {
-        removalOrError: null,
+        if (window.confirm(isSelf ? 'Leave the organization?' : `Remove the user ${node.username}?`)) {
+            return removeUserFromOrganisation()
+        }
     }
 
-    private removes = new Subject<void>()
-    private subscriptions = new Subscription()
-
-    private get isSelf(): boolean {
-        return this.props.authenticatedUser !== null && this.props.node.id === this.props.authenticatedUser.id
-    }
-
-    public componentDidMount(): void {
-        this.subscriptions.add(
-            this.removes
-                .pipe(
-                    filter(() => {
-                        if (this.props.org.hasOneMember && this.props.blockRemoveOnlyMember?.()) {
-                            return false
-                        }
-                        return window.confirm(
-                            this.isSelf ? 'Leave the organization?' : `Remove the user ${this.props.node.username}?`
-                        )
-                    }),
-                    switchMap(() =>
-                        removeUserFromOrganization({ user: this.props.node.id, organization: this.props.org.id }).pipe(
-                            catchError(error => [asError(error)]),
-                            map(removalOrError => ({ removalOrError: removalOrError || null })),
-                            tap(() => {
-                                if (this.props.onDidUpdate) {
-                                    this.props.onDidUpdate(this.isSelf)
-                                }
-                            }),
-                            startWith<Pick<UserNodeState, 'removalOrError'>>({ removalOrError: undefined })
-                        )
-                    )
-                )
-                .subscribe(
-                    stateUpdate => {
-                        this.setState(stateUpdate)
-                    },
-                    error => logger.error(error)
-                )
-        )
-    }
-
-    public componentWillUnmount(): void {
-        this.subscriptions.unsubscribe()
-    }
-
-    public render(): JSX.Element | null {
-        const loading = this.state.removalOrError === undefined
-        return (
-            <li
-                className={classNames(styles.container, 'list-group-item')}
-                data-test-username={this.props.node.username}
-            >
-                <div className="d-flex align-items-center justify-content-between">
-                    <div>
-                        <Link to={userURL(this.props.node.username)}>
-                            <strong>{this.props.node.username}</strong>
+    return (
+        <li className={classNames(styles.container, 'list-group-item')} data-test-username={node.username}>
+            <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center flex-1">
+                    <Tooltip content={node.displayName || node.username}>
+                        <UserAvatar size={36} className={styles.avatar} user={node} />
+                    </Tooltip>
+                    <div className="ml-2">
+                        <Link to={userURL(node.username)}>
+                            <strong>{node.displayName || node.username}</strong>
                         </Link>
-                        {this.props.node.displayName && (
+                        {node.displayName && (
                             <>
                                 <br />
-                                <span className="text-muted">{this.props.node.displayName}</span>
+                                <span className="text-muted">{node.username}</span>
                             </>
                         )}
                     </div>
-                    <div className="site-admin-detail-list__actions">
-                        {this.props.authenticatedUser && this.props.org.viewerCanAdminister && (
+                </div>
+                <div className="flex-1 d-flex align-items-center justify-content-between">
+                    <span className="text-muted flex-1">{node.siteAdmin ? 'Admin' : 'Member'}</span>
+                    <div>
+                        {authenticatedUser && org.viewerCanAdminister && (
                             <Button
                                 className="site-admin-detail-list__action test-remove-org-member"
-                                onClick={this.remove}
+                                onClick={remove}
                                 disabled={loading}
                                 variant="secondary"
                                 size="sm"
                             >
-                                {this.isSelf ? 'Leave organization' : 'Remove from organization'}
+                                {isSelf ? 'Leave organization' : 'Remove from organization'}
                             </Button>
                         )}
                     </div>
                 </div>
-                {isErrorLike(this.state.removalOrError) && (
-                    <ErrorAlert className="mt-2" error={this.state.removalOrError} />
-                )}
-            </li>
-        )
-    }
-
-    private remove = (): void => this.removes.next()
+            </div>
+            {error && <ErrorAlert className="mt-2" error={error} />}
+        </li>
+    )
 }
 
-interface Props extends OrgAreaRouteContext, RouteComponentProps<{}> {
-    history: H.History
-}
-
-interface State extends HasOneMember {
-    /**
-     * Whether the viewer can administer this org. This is updated whenever a member is added or removed, so that
-     * we can detect if the currently authenticated user is no longer able to administer the org (e.g., because
-     * they removed themselves and they are not a site admin).
-     */
-    viewerCanAdminister: boolean
-    /**
-     * Whether the viewer is the only org member (and cannot delete their membership)
-     */
-    onlyMemberRemovalAttempted: boolean
-}
+interface Props extends OrgAreaRouteContext, RouteComponentProps<{}> {}
 
 /**
  * The organizations members page
  */
-export class OrgSettingsMembersPage extends React.PureComponent<Props, State> {
-    private componentUpdates = new Subject<Props>()
-    private userUpdates = new Subject<void>()
-    private subscriptions = new Subscription()
-
-    constructor(props: Props) {
-        super(props)
-        this.state = {
-            viewerCanAdminister: props.org.viewerCanAdminister,
-            hasOneMember: false,
-            onlyMemberRemovalAttempted: false,
-        }
-    }
-
-    public componentDidMount(): void {
+export const OrgSettingsMembersPage: React.FunctionComponent<Props> = ({
+    org,
+    authenticatedUser,
+    onOrganizationUpdate,
+    location,
+}) => {
+    React.useEffect(() => {
         eventLogger.logViewEvent('OrgMembers')
+    }, [])
 
-        this.subscriptions.add(
-            this.componentUpdates
-                .pipe(
-                    map(props => props.org),
-                    distinctUntilChanged((a, b) => a.id === b.id)
-                )
-                .subscribe(org => {
-                    this.setState({ viewerCanAdminister: org.viewerCanAdminister })
-                    this.userUpdates.next()
-                })
-        )
-    }
+    const history = useHistory()
+    const [onlyMemberRemovalAttempted, setOnlyMemberRemovalAttempted] = React.useState(false)
+    const [searchQuery, setSearchQuery] = React.useState<string>('')
+    const debouncedSearchQuery = useDebounce<string>(searchQuery, 300)
 
-    public componentDidUpdate(): void {
-        this.componentUpdates.next(this.props)
-    }
+    const {
+        data,
+        connection,
+        loading,
+        error,
+        refetch: refetchQuery,
+        ...paginationProps
+    } = usePageSwitcherPagination<
+        OrganizationSettingsMembersResult,
+        OrganizationSettingsMembersVariables,
+        OrganizationMemberNode
+    >({
+        query: ORGANIZATION_MEMBERS_QUERY,
+        variables: { id: org.id, query: debouncedSearchQuery },
+        getConnection: ({ data }) => {
+            const org = data?.node?.__typename === 'Org' ? data.node : undefined
 
-    public componentWillUnmount(): void {
-        this.subscriptions.unsubscribe()
-    }
+            return org?.members
+        },
+    })
 
-    public render(): JSX.Element | null {
-        const nodeProps: Omit<UserNodeProps, 'node'> = {
-            org: {
-                ...this.props.org,
-                viewerCanAdminister: this.state.viewerCanAdminister,
-                hasOneMember: this.state.hasOneMember,
-            },
-            authenticatedUser: this.props.authenticatedUser,
-            onDidUpdate: this.onDidUpdateUser,
-            blockRemoveOnlyMember: () => {
-                if (!this.props.authenticatedUser.siteAdmin) {
-                    this.setState({ onlyMemberRemovalAttempted: true })
-                    return true
-                }
-                return false
-            },
+    const viewerCanAdminister = React.useMemo(() => {
+        const orgResult = data?.node?.__typename === 'Org' ? data.node : undefined
 
-            history: this.props.history,
+        return orgResult?.viewerCanAdminister || org.viewerCanAdminister
+    }, [data, org.viewerCanAdminister])
+
+    const hasOneMember = React.useMemo(() => connection?.totalCount === 1, [connection])
+
+    const refetch = React.useCallback(() => {
+        refetchQuery()
+        setOnlyMemberRemovalAttempted(false)
+    }, [refetchQuery, setOnlyMemberRemovalAttempted])
+
+    const blockRemoveOnlyMember = React.useCallback(() => {
+        if (!authenticatedUser.siteAdmin) {
+            setOnlyMemberRemovalAttempted(true)
+            return true
         }
+        return false
+    }, [authenticatedUser, setOnlyMemberRemovalAttempted])
 
-        return (
-            <div className="org-settings-members-page">
-                <PageTitle title={`Members - ${this.props.org.name}`} />
-                <PageHeader path={[{ text: 'Organization members' }]} headingElement="h2" className="mb-3" />
-                <Container>
-                    {this.state.onlyMemberRemovalAttempted && (
-                        <Alert variant="warning">You can’t remove the only member of an organization</Alert>
-                    )}
-                    {this.state.viewerCanAdminister && (
-                        <InviteForm
-                            orgID={this.props.org.id}
-                            authenticatedUser={this.props.authenticatedUser}
-                            onOrganizationUpdate={this.props.onOrganizationUpdate}
-                            onDidUpdateOrganizationMembers={this.onDidUpdateOrganizationMembers}
-                        />
-                    )}
-                    <FilteredConnection<OrganizationMemberNode, Omit<UserNodeProps, 'node'>>
-                        className="list-group list-group-flush test-org-members"
-                        noun="member"
-                        pluralNoun="members"
-                        queryConnection={this.fetchOrgMembers}
-                        nodeComponent={UserNode}
-                        nodeComponentProps={nodeProps}
-                        updates={this.userUpdates}
-                        history={this.props.history}
-                        location={this.props.location}
-                    />
-                </Container>
-            </div>
-        )
-    }
-
-    private onDidUpdateUser = (didRemoveSelf: boolean): void => {
-        if (didRemoveSelf) {
-            this.props.history.push('/user/settings')
-            return
-        }
-        this.userUpdates.next()
-    }
-
-    private onDidUpdateOrganizationMembers = (): void => this.userUpdates.next()
-
-    private fetchOrgMembers = (args: {
-        first?: number
-        after?: string | null
-        query?: string
-    }): Observable<OrgNode['members']> =>
-        requestGraphQL<OrganizationSettingsMembersResult, OrganizationSettingsMembersVariables>(
-            gql`
-                query OrganizationSettingsMembers($id: ID!, $first: Int!, $after: String, $query: String) {
-                    node(id: $id) {
-                        ... on Org {
-                            __typename
-                            viewerCanAdminister
-                            members(query: $query, first: $first, after: $after) {
-                                nodes {
-                                    ...OrganizationMemberNode
-                                }
-                                totalCount
-                            }
-                        }
-                    }
-                }
-
-                fragment OrganizationMemberNode on User {
-                    id
-                    username
-                    displayName
-                    avatarURL
-                }
-            `,
-            {
-                id: this.props.org.id,
-                query: args.query ?? null,
-                first: args.first ?? 2,
-                after: args.after ?? null,
+    const onDidUpdate = React.useCallback(
+        (didRemoveSelf: boolean) => {
+            if (didRemoveSelf) {
+                history.push('/user/settings')
+            } else {
+                refetch()
             }
-        ).pipe(
-            map(({ data, errors }) => {
-                if (!data || !data.node) {
-                    this.setState({ viewerCanAdminister: false, hasOneMember: false })
-                    throw createAggregateError(errors)
-                }
-                const org = data.node
-                if (org.__typename !== 'Org') {
-                    throw new Error('Unexpected node type')
-                }
-                if (!org.members) {
-                    this.setState({ viewerCanAdminister: false, hasOneMember: false })
-                    throw createAggregateError(errors)
-                }
-                this.setState({
-                    viewerCanAdminister: org.viewerCanAdminister,
-                    hasOneMember: org.members.totalCount === 1,
-                    onlyMemberRemovalAttempted: false,
-                })
-                return org.members
-            })
-        )
+        },
+        [refetch, history]
+    )
+
+    const totalCount = connection?.totalCount || 0
+
+    return (
+        <div className="org-settings-members-page">
+            <PageTitle title={`Members - ${org.name}`} />
+            <PageHeader
+                path={[{ text: authenticatedUser?.siteAdmin ? 'Add or invite member' : 'Invite member' }]}
+                headingElement="h2"
+                className="mb-3"
+            />
+            {viewerCanAdminister && (
+                <InviteForm
+                    orgID={org.id}
+                    authenticatedUser={authenticatedUser}
+                    onOrganizationUpdate={onOrganizationUpdate}
+                    onDidUpdateOrganizationMembers={refetch}
+                />
+            )}
+            <Container className="mt-3">
+                <PageHeader
+                    path={[{ text: 'Members' }]}
+                    headingElement="h2"
+                    className="mb-3"
+                    actions={
+                        <Input
+                            placeholder="Search by username or display name"
+                            onChange={event => setSearchQuery(event.target.value || '')}
+                            value={searchQuery}
+                            autoComplete="off"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            spellCheck={false}
+                            size={30}
+                            className="mb-0"
+                        />
+                    }
+                />
+                {onlyMemberRemovalAttempted && (
+                    <Alert variant="warning">You can’t remove the only member of an organization</Alert>
+                )}
+                {connection?.totalCount === 0 ? (
+                    <Alert variant="warning">No members found based on the search query.</Alert>
+                ) : null}
+                {loading && <LoadingSpinner />}
+                {error && <ErrorAlert className="mb-3" error={error} />}
+                <ul className="list-group list-group-flush test-org-members mt-4">
+                    {totalCount > 0 && (
+                        <li className="d-flex mb-2 align-items-center justify-content-between">
+                            <strong className="flex-1">
+                                {`${totalCount} ${pluralize('person', totalCount, 'people')} in the ${
+                                    org.name
+                                } organization`}
+                            </strong>
+                            <div className="flex-1 d-flex align-items-center justify-content-between">
+                                <strong>Role</strong>
+                                <strong>Action</strong>
+                            </div>
+                        </li>
+                    )}
+                    {(connection?.nodes || []).map(node => (
+                        <UserNode
+                            key={node.id}
+                            node={node}
+                            org={org}
+                            hasOneMember={hasOneMember}
+                            authenticatedUser={authenticatedUser}
+                            blockRemoveOnlyMember={blockRemoveOnlyMember}
+                            onDidUpdate={onDidUpdate}
+                        />
+                    ))}
+                </ul>
+                <PageSwitcher {...paginationProps} className="mt-4" totalCount={connection?.totalCount || 0} />
+            </Container>
+        </div>
+    )
 }
