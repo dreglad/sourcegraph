@@ -4,7 +4,7 @@ import { parseRepoRevision } from '@sourcegraph/shared/src/util/url'
 import { catchError } from 'rxjs/operators/index'
 import { isCloneInProgressErrorLike, isRepoSeeOtherErrorLike } from '@sourcegraph/shared/src/backend/errors'
 import { NEVER, of } from 'rxjs'
-import { asError, type ErrorLike } from '@sourcegraph/common'
+import { asError, encodeURIPathComponent, type ErrorLike } from '@sourcegraph/common'
 
 export const load: LayoutLoad = ({ params }) => {
     const { repoName, revision } = parseRepoRevision(params.repo)
@@ -28,6 +28,7 @@ export const load: LayoutLoad = ({ params }) => {
         .toPromise()
 
     return {
+        repoURL: '/' + encodeURIPathComponent(repoName),
         repoName,
         revision,
         resolvedRevision,

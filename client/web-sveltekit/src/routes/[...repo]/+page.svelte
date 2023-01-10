@@ -2,8 +2,15 @@
     import FileTree from '$lib/FileTree.svelte'
 
     import Commit from '$lib/Commit.svelte'
-    import { mdiSourceCommit, mdiSourceRepository, mdiFolderOutline, mdiFileDocumentOutline } from '@mdi/js'
-    import { encodeURIPathComponent, isErrorLike } from '@sourcegraph/common'
+    import {
+        mdiSourceCommit,
+        mdiSourceRepository,
+        mdiFolderOutline,
+        mdiFileDocumentOutline,
+        mdiSourceBranch,
+        mdiTag,
+    } from '@mdi/js'
+    import { isErrorLike } from '@sourcegraph/common'
 
     import type { PageData } from './$types'
     import Icon from '$lib/Icon.svelte'
@@ -28,9 +35,9 @@
             </p>
         {/if}
         <p class="tabs">
-            <a href="/{encodeURIPathComponent(data.repoName)}/-/commits"
-                ><Icon svgPath={mdiSourceCommit} inline /> Commits</a
-            >
+            <a href="{data.repoURL}/-/commits"><Icon svgPath={mdiSourceCommit} inline /> Commits</a>
+            <a href="{data.repoURL}/-/branches"><Icon svgPath={mdiSourceBranch} inline /> Branches</a>
+            <a href="{data.repoURL}/-/tags"><Icon svgPath={mdiTag} inline /> Tags</a>
         </p>
 
         {#if !$treeOrError.loading && $treeOrError.data && !isErrorLike($treeOrError.data)}

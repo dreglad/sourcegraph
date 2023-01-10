@@ -2,24 +2,22 @@ import * as React from 'react'
 
 import { mdiChevronRight } from '@mdi/js'
 import { RouteComponentProps } from 'react-router-dom'
-import { Observable, Subject, Subscription } from 'rxjs'
+import { Subject, Subscription } from 'rxjs'
 import { catchError, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators'
 
 import { ErrorAlert } from '@sourcegraph/branded/src/components/alerts'
-import { asError, createAggregateError, ErrorLike, isErrorLike, logger, memoizeObservable } from '@sourcegraph/common'
-import { gql } from '@sourcegraph/http-client'
-import { Scalars } from '@sourcegraph/shared/src/graphql-operations'
+import { asError, ErrorLike, isErrorLike, logger } from '@sourcegraph/common'
 import { Link, LoadingSpinner, CardHeader, Card, Icon } from '@sourcegraph/wildcard'
 
-import { queryGraphQL } from '../../backend/graphql'
 import { PageTitle } from '../../components/PageTitle'
-import { GitRefFields, RepositoryGitBranchesOverviewRepository } from '../../graphql-operations'
+import { GitRefFields } from '../../graphql-operations'
 import { eventLogger } from '../../tracking/eventLogger'
-import { gitReferenceFragments, GitReferenceNode } from '../GitReference'
+import { GitReferenceNode } from '../GitReference'
 
 import { RepositoryBranchesAreaPageProps } from './RepositoryBranchesArea'
 
 import styles from './RepositoryBranchesOverviewPage.module.scss'
+import { queryGitBranchesOverview } from './loader'
 
 interface Data {
     defaultBranch: GitRefFields | null
@@ -27,53 +25,7 @@ interface Data {
     hasMoreActiveBranches: boolean
 }
 
-export const queryGitBranches = memoizeObservable(
-    (args: { repo: Scalars['ID']; first: number }): Observable<Data> =>
-        queryGraphQL(
-            gql`
-                query RepositoryGitBranchesOverview($repo: ID!, $first: Int!, $withBehindAhead: Boolean!) {
-                    node(id: $repo) {
-                        ...RepositoryGitBranchesOverviewRepository
-                    }
-                }
-
-                fragment RepositoryGitBranchesOverviewRepository on Repository {
-                    defaultBranch {
-                        ...GitRefFields
-                    }
-                    gitRefs(first: $first, type: GIT_BRANCH, orderBy: AUTHORED_OR_COMMITTED_AT) {
-                        nodes {
-                            ...GitRefFields
-                        }
-                        pageInfo {
-                            hasNextPage
-                        }
-                    }
-                }
-                ${gitReferenceFragments}
-            `,
-            { ...args, withBehindAhead: true }
-        ).pipe(
-            map(({ data, errors }) => {
-                if (!data || !data.node) {
-                    throw createAggregateError(errors)
-                }
-                const repo = data.node as RepositoryGitBranchesOverviewRepository
-                if (!repo.gitRefs || !repo.gitRefs.nodes) {
-                    throw createAggregateError(errors)
-                }
-                return {
-                    defaultBranch: repo.defaultBranch,
-                    activeBranches: repo.gitRefs.nodes.filter(
-                        // Filter out default branch from activeBranches.
-                        ({ id }) => !repo.defaultBranch || repo.defaultBranch.id !== id
-                    ),
-                    hasMoreActiveBranches: repo.gitRefs.pageInfo.hasNextPage,
-                }
-            })
-        ),
-    args => `${args.repo}:${args.first}`
-)
+export { queryGitBranchesOverview as queryGitBranches }
 
 interface Props extends RepositoryBranchesAreaPageProps, RouteComponentProps<{}> {}
 
@@ -98,7 +50,7 @@ export class RepositoryBranchesOverviewPage extends React.PureComponent<Props, S
                     distinctUntilChanged((a, b) => a.repo.id === b.repo.id),
                     switchMap(({ repo }) => {
                         type PartialStateUpdate = Pick<State, 'dataOrError'>
-                        return queryGitBranches({ repo: repo.id, first: 10 }).pipe(
+                        return queryGitBranchesOverview({ repo: repo.id, first: 10 }).pipe(
                             catchError((error): [ErrorLike] => [asError(error)]),
                             map((dataOrError): PartialStateUpdate => ({ dataOrError })),
                             startWith<PartialStateUpdate>({ dataOrError: undefined })

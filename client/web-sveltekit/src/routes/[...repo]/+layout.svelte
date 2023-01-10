@@ -21,6 +21,7 @@
 
     $: resolvedRevision = isErrorLike(data.resolvedRevision) ? null : data.resolvedRevision
     $: revisionLabel = getRevisionLabel(data.revision, resolvedRevision)
+    $: repoName = displayRepoName(repo.split('@')[0])
     $: if (resolvedRevision) {
         repoActions.setAction({ key: 'permalink', priority: 100, component: Permalink })
     }
@@ -31,7 +32,7 @@
 {:else}
     <div class="header">
         <nav>
-            <a class="button" href="/{repo}"><Icon svgPath={mdiSourceRepository} inline /> {displayRepoName(repo)}</a>
+            <a class="button" href="/{repo}"><Icon svgPath={mdiSourceRepository} inline /> {repoName}</a>
             {#if revisionLabel}
                 @ <span class="button">{revisionLabel}</span>
             {/if}

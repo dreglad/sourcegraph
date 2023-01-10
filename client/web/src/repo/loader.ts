@@ -1,0 +1,100 @@
+import { createAggregateError, memoizeObservable } from '@sourcegraph/common'
+import { gql } from '@sourcegraph/http-client'
+import type { Observable } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { requestGraphQL } from '../backend/graphql'
+import {
+    type GitRefConnectionFields,
+    GitRefType,
+    type RepositoryGitRefsResult,
+    type RepositoryGitRefsVariables,
+    type Scalars,
+} from '../graphql-operations'
+
+export const gitReferenceFragments = gql`
+    fragment GitRefFields on GitRef {
+        id
+        displayName
+        name
+        abbrevName
+        url
+        target {
+            commit {
+                author {
+                    ...SignatureFieldsForReferences
+                }
+                committer {
+                    ...SignatureFieldsForReferences
+                }
+                behindAhead(revspec: "HEAD") @include(if: $withBehindAhead) {
+                    behind
+                    ahead
+                }
+            }
+        }
+    }
+
+    fragment SignatureFieldsForReferences on Signature {
+        __typename
+        person {
+            displayName
+            user {
+                username
+            }
+        }
+        date
+    }
+`
+
+export const REPOSITORY_GIT_REFS = gql`
+    query RepositoryGitRefs($repo: ID!, $first: Int, $query: String, $type: GitRefType!, $withBehindAhead: Boolean!) {
+        node(id: $repo) {
+            __typename
+            ... on Repository {
+                gitRefs(first: $first, query: $query, type: $type, orderBy: AUTHORED_OR_COMMITTED_AT) {
+                    __typename
+                    ...GitRefConnectionFields
+                }
+            }
+        }
+    }
+
+    fragment GitRefConnectionFields on GitRefConnection {
+        nodes {
+            __typename
+            ...GitRefFields
+        }
+        totalCount
+        pageInfo {
+            hasNextPage
+        }
+    }
+
+    ${gitReferenceFragments}
+`
+
+export const queryGitReferences = memoizeObservable(
+    (args: {
+        repo: Scalars['ID']
+        first?: number
+        query?: string
+        type: GitRefType
+        withBehindAhead?: boolean
+    }): Observable<GitRefConnectionFields> =>
+        requestGraphQL<RepositoryGitRefsResult, RepositoryGitRefsVariables>(REPOSITORY_GIT_REFS, {
+            query: args.query ?? null,
+            first: args.first ?? null,
+            repo: args.repo,
+            type: args.type,
+            withBehindAhead:
+                args.withBehindAhead !== undefined ? args.withBehindAhead : args.type === GitRefType.GIT_BRANCH,
+        }).pipe(
+            map(({ data, errors }) => {
+                if (!data || !data.node || data.node.__typename !== 'Repository' || !data.node.gitRefs) {
+                    throw createAggregateError(errors)
+                }
+                return data.node.gitRefs
+            })
+        ),
+    args => `${args.repo}:${String(args.first)}:${String(args.query)}:${args.type}`
+)

@@ -1,4 +1,4 @@
-import { derived, writable, type Readable } from 'svelte/store'
+import { derived, readable, writable, type Readable } from 'svelte/store'
 import type { RepositoryFields } from '@sourcegraph/web/src/graphql-operations'
 import type { SettingsCascade } from '@sourcegraph/shared/src/settings/settings'
 import { getContext } from 'svelte'
@@ -46,6 +46,14 @@ export const isLightTheme = {
         return isLightTheme.subscribe(fn)
     },
 }
+
+/**
+ * A store that updates every second to return the current time.
+ */
+export const currentDate: Readable<Date> = readable(new Date(), set => {
+    const interval = setInterval(() => set(new Date()), 1000)
+    return () => clearInterval(interval)
+})
 
 // Proof of concept for updating polling repo for updated information to
 // decide when to invalidate
