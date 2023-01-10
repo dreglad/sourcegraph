@@ -89,6 +89,9 @@ export const repoContainerRoutes: readonly RepoContainerRoute[] = [
         path: '/-/stats',
         render: context => <RepositoryStatsArea {...context} />,
     },
+]
+
+export const repoSettingsContainerRoutes: readonly RepoContainerRoute[] = [
     {
         path: '/-/settings',
         render: context => <RepoSettingsArea {...context} />,
