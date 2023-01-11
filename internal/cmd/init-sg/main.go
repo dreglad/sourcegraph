@@ -200,7 +200,7 @@ func addReposCommand() {
 	}
 }
 
-const MigrationTimeout = time.Minute
+const MigrationTimeout = time.Minute * 5
 
 func oobmigrationCommand() {
 	if *migrationID == "" {
