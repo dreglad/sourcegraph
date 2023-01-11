@@ -11,6 +11,9 @@ load("@aspect_rules_ts//ts:defs.bzl", "ts_config")
 #
 # gazelle:aspect_js disabled
 
+# Enable only the Aspect javascript plugin for gazelle
+# gazelle:lang js
+
 package(default_visibility = ["//visibility:public"])
 
 npm_link_all_packages(name = "node_modules")
