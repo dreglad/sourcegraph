@@ -54,12 +54,14 @@ import {
     RepoRevisionContainerRoute,
 } from './RepoRevisionContainer'
 import { commitsPath, compareSpecPath } from './routes'
+// import { RepoSettingsContainerContext } from './settings/RepoSettingsContainer'
 import { RepoSettingsAreaRoute } from './settings/RepoSettingsArea'
 import { RepoSettingsSideBarGroup } from './settings/RepoSettingsSidebar'
 
 import { redirectToExternalHost } from '.'
 
 import styles from './RepoContainer.module.scss'
+import {RepoQuestionIcon} from "@sourcegraph/shared/out/src/components/icons";
 
 /**
  * Props passed to sub-routes of {@link RepoContainer}.
@@ -80,6 +82,7 @@ export interface RepoContainerContext
         CodeIntelligenceProps,
         BatchChangesProps,
         CodeInsightsProps {
+    //repo: RepositoryFields | undefined
     repo: RepositoryFields
     repoName: string
     resolvedRevisionOrError: ResolvedRevision | ErrorLike | undefined
@@ -104,6 +107,10 @@ export interface RepoContainerRoute extends RouteDescriptor<RepoContainerContext
 
 const RepoPageNotFound: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => (
     <HeroPage icon={MapSearchIcon} title="404: Not Found" subtitle="The repository page was not found." />
+)
+
+const EmptyRepo: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => (
+    <HeroPage icon={RepoQuestionIcon} title="Empty repository" />
 )
 
 interface RepoContainerProps
@@ -298,7 +305,8 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
     // if revision for given repo does not resolve then we still proceed to render settings routes
     const repoSettingsOnly = isRevisionNotFoundErrorLike(repoOrError)
 
-    if (isError && !repoSettingsOnly) {
+    //if (isError && !repoSettingsOnly) {
+    if (isError) {
         return (
             <RepoContainerError
                 repoName={repoName}
@@ -334,11 +342,12 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
 
     /**
      * `RepoContainerContextRoutes` depend on `repoOrError`. We render these routes only when
-     * the `repoOrError` value is resolved.
+     * the `repoOrError` value is resolved. If repoOrError resolves to error due to empty repository
+     * then we return Empty Repository
      */
     const getRepoContainerContextRoutes = (): (false | JSX.Element)[] | null => {
         if (repoOrError) {
-            if (repo) {
+            if (repo){
                 const repoContainerContext: RepoContainerContext = {
                     ...repoRevisionContainerContext,
                     repo,
@@ -351,44 +360,27 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                     ...props.repoContainerRoutes.map(
                         ({ path, render, exact, condition = () => true }) =>
                             condition(repoContainerContext) &&
-                            (repoSettingsOnly ? (
-                                <RepoContainerError
-                                    key="hardcoded-key"
-                                    repoName={repoName}
-                                    viewerCanAdminister={viewerCanAdminister}
-                                    repoFetchError={repoOrError as ErrorLike}
-                                />
-                            ) : (
-                                <Route
-                                    path={repoContainerContext.routePrefix + path}
-                                    key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
-                                    exact={exact}
-                                    render={routeComponentProps =>
-                                        render({
-                                            ...repoContainerContext,
-                                            ...routeComponentProps,
-                                        })
-                                    }
-                                />
-                            ))
-                    ),
-                    <Route key="hardcoded-key" component={RepoPageNotFound} />,
-                ]
-            }
-            else {
-                return [
-                    ...props.repoContainerRoutes.map(
-                        ({ path, render, exact, condition = () => true }) =>
-                            <RepoContainerError
-                                key="hardcoded-key"
-                                repoName={repoName}
-                                viewerCanAdminister={viewerCanAdminister}
-                                repoFetchError={repoOrError as ErrorLike}
+                            <Route
+                                path={repoContainerContext.routePrefix + path}
+                                key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
+                                exact={exact}
+                                render={routeComponentProps =>
+                                    render({
+                                        ...repoContainerContext,
+                                        ...routeComponentProps,
+                                    })
+                                }
                             />
                     ),
                     <Route key="hardcoded-key" component={RepoPageNotFound} />,
                 ]
             }
+            //if (repoSettingsOnly) {
+                // We cannot render these routes for an empty repository
+                return [
+                    <Route key="hardcoded-key" component={EmptyRepo} />
+                ]
+            //}
         }
 
         return null
@@ -396,7 +388,40 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
 
     const getRepoSettingsContainerContextRoutes = (): (false | JSX.Element)[] | null => {
         if (repoOrError) {
+            // const repoSettingsContainerContext: RepoSettingsContainerContext = {
+            //     ...repoRevisionContainerContext,
+            //     // repo,
+            //     resolvedRevisionOrError,
+            //     onDidUpdateExternalLinks: setExternalLinks,
+            //     repoName,
+            // }
+
+            const repoContainerContext: RepoContainerContext = {
+                ...repoRevisionContainerContext,
+                repo,
+                resolvedRevisionOrError,
+                onDidUpdateExternalLinks: setExternalLinks,
+                repoName,
+            }
+
             return [
+                // <Route
+                //     path={repoSettingsContainerContext.routePrefix + path}
+                //     key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
+                //     exact={exact}
+                //     render={
+                //         <RepoSettingsArea {
+                //             ...repoSettingsContainerContext,
+                //             ...routeComponentProps,
+                //         } />,
+                //
+                //         render({
+                //             ...repoSettingsContainerContext,
+                //             ...routeComponentProps,
+                //         })
+                //     }
+                // />
+
                 ...props.repoSettingsContainerRoutes.map(
                     ({ path, render, exact, condition = () => true }) =>
                         (
@@ -509,29 +534,21 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                             '/-/tag',
                             '/-/home',
                         ].map(routePath => (
-                            <Route
-                                path={`${repoMatchURL}${routePath}`}
-                                key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
-                                exact={routePath === ''}
-                                render={routeComponentProps =>
-                                    repoSettingsOnly ? (
-                                        <RepoContainerError
-                                            key="hardcoded-key"
-                                            repoName={repoName}
-                                            viewerCanAdminister={viewerCanAdminister}
-                                            repoFetchError={repoOrError as ErrorLike}
-                                        />
-                                    ) : (
-                                        <RepoRevisionContainer
-                                            {...routeComponentProps}
-                                            {...repoRevisionContainerContext}
-                                            {...childBreadcrumbSetters}
-                                            routes={props.repoRevisionContainerRoutes}
-                                            // must exactly match how the revision was encoded in the URL
-                                            routePrefix={`${repoMatchURL}${rawRevision ? `@${rawRevision}` : ''}`}
-                                        />
-                                    )
-                                }
+                            !repoSettingsOnly && // must be non-empty repo to resolve a revision
+                                <Route
+                                    path={`${repoMatchURL}${routePath}`}
+                                    key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
+                                    exact={routePath === ''}
+                                    render={routeComponentProps =>
+                                            <RepoRevisionContainer
+                                                {...routeComponentProps}
+                                                {...repoRevisionContainerContext}
+                                                {...childBreadcrumbSetters}
+                                                routes={props.repoRevisionContainerRoutes}
+                                                // must exactly match how the revision was encoded in the URL
+                                                routePrefix={`${repoMatchURL}${rawRevision ? `@${rawRevision}` : ''}`}
+                                            />
+                                    }
                             />
                         ))}
                         {getRepoSettingsContainerContextRoutes()}

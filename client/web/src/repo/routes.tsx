@@ -14,6 +14,8 @@ import { RepoContainerRoute } from './RepoContainer'
 import { RepoRevisionContainerContext, RepoRevisionContainerRoute } from './RepoRevisionContainer'
 import { RepositoryFileTreePageProps } from './RepositoryFileTreePage'
 import { RepositoryTagTab } from './tree/TagTab'
+import {RepoSettingsContainerRoute} from "./settings/RepoSettingsContainer";
+//import {RepoSettingsAreaRoute} from "./settings/RepoSettingsArea";
 
 const RepositoryCommitsPage = lazyComponent(() => import('./commits/RepositoryCommitsPage'), 'RepositoryCommitsPage')
 

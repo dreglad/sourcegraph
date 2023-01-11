@@ -41,6 +41,7 @@ export interface RepoSettingsAreaRoute extends RouteDescriptor<RepoSettingsAreaR
 interface Props extends RouteComponentProps<{}>, BreadcrumbSetters, ThemeProps, TelemetryProps {
     repoSettingsAreaRoutes: readonly RepoSettingsAreaRoute[]
     repoSettingsSidebarGroups: RepoSettingsSideBarGroups
+    // repo: RepositoryFields | undefined
     repo: RepositoryFields
     repoName: string
     authenticatedUser: AuthenticatedUser | null
