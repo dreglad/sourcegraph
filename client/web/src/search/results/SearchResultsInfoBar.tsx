@@ -13,10 +13,12 @@ import { SearchPatternTypeProps, CaseSensitivityProps } from '@sourcegraph/share
 import { FilterKind, findFilter } from '@sourcegraph/shared/src/search/query/query'
 import { AggregateStreamingSearchResults } from '@sourcegraph/shared/src/search/stream'
 import { TelemetryProps } from '@sourcegraph/shared/src/telemetry/telemetryService'
+import { buildCloudTrialURL } from '@sourcegraph/shared/src/util/url'
 import { Button, Icon, Link } from '@sourcegraph/wildcard'
 
 import { AuthenticatedUser } from '../../auth'
 import { CloudCtaBanner } from '../../components/CloudCtaBanner'
+import { eventLogger } from '../../tracking/eventLogger'
 
 import {
     getCodeMonitoringCreateAction,
@@ -31,13 +33,13 @@ import styles from './SearchResultsInfoBar.module.scss'
 
 export interface SearchResultsInfoBarProps
     extends ExtensionsControllerProps<'executeCommand' | 'extHostAPI'>,
-        PlatformContextProps<'settings' | 'sourcegraphURL'>,
         TelemetryProps,
+        PlatformContextProps<'settings' | 'sourcegraphURL'>,
         SearchPatternTypeProps,
         Pick<CaseSensitivityProps, 'caseSensitive'> {
     history: H.History
     /** The currently authenticated user or null */
-    authenticatedUser: Pick<AuthenticatedUser, 'id'> | null
+    authenticatedUser: Pick<AuthenticatedUser, 'id' | 'displayName' | 'emails'> | null
 
     /**
      * Whether the code insights feature flag is enabled.
@@ -170,10 +172,10 @@ export const SearchResultsInfoBar: React.FunctionComponent<
                     <CloudCtaBanner className="mb-0" variant="outlined">
                         To search across your private repositories,{' '}
                         <Link
-                            to="https://signup.sourcegraph.com"
+                            to={buildCloudTrialURL(props.authenticatedUser)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={() => props.telemetryService.log('ClickedOnCloudCTA')}
+                            onClick={() => eventLogger.log('ClickedOnCloudCTA', { cloudCtaType: 'SearchResults' })}
                         >
                             try Sourcegraph Cloud
                         </Link>
