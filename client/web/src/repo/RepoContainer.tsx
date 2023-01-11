@@ -338,55 +338,57 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
      */
     const getRepoContainerContextRoutes = (): (false | JSX.Element)[] | null => {
         if (repoOrError) {
-            // if (repoSettingsOnly){
-            //     return [
-            //         ...props.repoContainerRoutes.map(
-            //             ({ path, render, exact, condition = () => true }) =>
-            //                 condition(repoContainerContext) &&
-            //             <RepoContainerError
-            //                 key="hardcoded-key"
-            //                 repoName={repoName}
-            //                 viewerCanAdminister={viewerCanAdminister}
-            //                 repoFetchError={repoOrError as ErrorLike}
-            //             />
-            //         )
-            // }
+            if (repo) {
+                const repoContainerContext: RepoContainerContext = {
+                    ...repoRevisionContainerContext,
+                    repo,
+                    resolvedRevisionOrError,
+                    onDidUpdateExternalLinks: setExternalLinks,
+                    repoName,
+                }
 
-            const repoContainerContext: RepoContainerContext = {
-                ...repoRevisionContainerContext,
-                repo,
-                resolvedRevisionOrError,
-                onDidUpdateExternalLinks: setExternalLinks,
-                repoName: repoName,
+                return [
+                    ...props.repoContainerRoutes.map(
+                        ({ path, render, exact, condition = () => true }) =>
+                            condition(repoContainerContext) &&
+                            (repoSettingsOnly ? (
+                                <RepoContainerError
+                                    key="hardcoded-key"
+                                    repoName={repoName}
+                                    viewerCanAdminister={viewerCanAdminister}
+                                    repoFetchError={repoOrError as ErrorLike}
+                                />
+                            ) : (
+                                <Route
+                                    path={repoContainerContext.routePrefix + path}
+                                    key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
+                                    exact={exact}
+                                    render={routeComponentProps =>
+                                        render({
+                                            ...repoContainerContext,
+                                            ...routeComponentProps,
+                                        })
+                                    }
+                                />
+                            ))
+                    ),
+                    <Route key="hardcoded-key" component={RepoPageNotFound} />,
+                ]
             }
-
-            return [
-                ...props.repoContainerRoutes.map(
-                    ({ path, render, exact, condition = () => true }) =>
-                        condition(repoContainerContext) &&
-                        (repoSettingsOnly ? (
+            else {
+                return [
+                    ...props.repoContainerRoutes.map(
+                        ({ path, render, exact, condition = () => true }) =>
                             <RepoContainerError
                                 key="hardcoded-key"
                                 repoName={repoName}
                                 viewerCanAdminister={viewerCanAdminister}
                                 repoFetchError={repoOrError as ErrorLike}
                             />
-                        ) : (
-                            <Route
-                                path={repoContainerContext.routePrefix + path}
-                                key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
-                                exact={exact}
-                                render={routeComponentProps =>
-                                    render({
-                                        ...repoContainerContext,
-                                        ...routeComponentProps,
-                                    })
-                                }
-                            />
-                        ))
-                ),
-                <Route key="hardcoded-key" component={RepoPageNotFound} />,
-            ]
+                    ),
+                    <Route key="hardcoded-key" component={RepoPageNotFound} />,
+                ]
+            }
         }
 
         return null
@@ -394,17 +396,10 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
 
     const getRepoSettingsContainerContextRoutes = (): (false | JSX.Element)[] | null => {
         if (repoOrError) {
-            const repoContainerContext: RepoContainerContext = {
-                ...repoRevisionContainerContext,
-                repo: repo,
-                resolvedRevisionOrError,
-                onDidUpdateExternalLinks: setExternalLinks,
-            }
-
             return [
                 ...props.repoSettingsContainerRoutes.map(
                     ({ path, render, exact, condition = () => true }) =>
-                        condition(repoContainerContext) && (
+                        (
                             <Route
                                 path={repoContainerContext.routePrefix + path}
                                 key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
