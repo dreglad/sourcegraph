@@ -41,7 +41,6 @@ js_library(
 ts_config(
     name = "tsconfig",
     src = "tsconfig.bazel.json",
-    visibility = ["//visibility:public"],
     deps = [
         "//:node_modules/@sourcegraph/tsconfig",
         "//:tsconfig.json",
@@ -54,7 +53,19 @@ js_library(
     srcs = [
         "jest.config.base.js",
     ],
+
+    # TODO(bazel): this seems to not get carried forward and must
+    # also be specified on the jest_test() itself?
     deps = [
+        ":jest_config-deps",
+    ],
+)
+
+js_library(
+    name = "jest_config-deps",
+    testonly = True,
+    srcs = [
+        ":babel_config",
         "//:node_modules/@testing-library/jest-dom",
         "//:node_modules/abort-controller",
         "//:node_modules/babel-jest",
@@ -62,5 +73,31 @@ js_library(
         "//:node_modules/identity-obj-proxy",
         "//:node_modules/regenerator-runtime",
         "//client/shared/dev:mock",
+
+        # TODO(bazel): why are these indirect deps required when running jest?
+        "//:node_modules/classnames",
+    ],
+)
+
+js_library(
+    name = "babel_config",
+    testonly = True,  # should only be used for jest tests
+    srcs = [
+        "babel.config.js",
+        "package.json",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//:node_modules/@babel/plugin-transform-typescript",  #TODO: remove from config when bazel
+        "//:node_modules/@babel/preset-env",
+        "//:node_modules/@babel/preset-react",
+        "//:node_modules/@babel/preset-typescript",  #TODO: remove from config when bazel
+        "//:node_modules/babel-plugin-lodash",
+        "//:node_modules/babel-plugin-webpack-chunkname",
+        "//:node_modules/semver",
+        "//:node_modules/signale",
+
+        # TODO: not directly require/import-ed but they are used without delcared in package.json
+        # "//:node_modules/babel-plugin-istanbul",
     ],
 )

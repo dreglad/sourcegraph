@@ -39,32 +39,6 @@ js_binary(
     visibility = ["//client:__subpackages__"],
 )
 
-ts_project(
-    name = "dev_tests",
-    testonly = True,
-    srcs = [
-        "mockDomRect.ts",
-        "mockMatchMedia.ts",
-        "mockReactVisibilitySensor.tsx",
-        "mockResizeObserver.ts",
-        "mockSentryBrowser.ts",
-        "mockUniqueId.ts",
-        "reactCleanup.ts",  #keep
-        "setLinkComponentForTest.ts",  #keep
-    ],
-    visibility = ["//visibility:private"],
-    deps = [
-        "//:node_modules/@sentry/browser",
-        "//:node_modules/@sourcegraph/wildcard",  #keep
-        "//:node_modules/@testing-library/react",  #keep
-        "//:node_modules/@types/node",  #keep
-        "//:node_modules/@types/react",
-        "//:node_modules/react",
-        "//:node_modules/react-visibility-sensor",  #keep
-        "//:node_modules/resize-observer-polyfill",
-    ],
-)
-
 js_library(
     name = "mock",
     testonly = True,
@@ -73,12 +47,29 @@ js_library(
         "jest-environment.js",
         "jestGlobalSetup.js",
         "mockDate.js",
-        ":dev_tests",
+        "mockDomRect.ts",
+        "mockMatchMedia.ts",
+        "mockReactVisibilitySensor.tsx",
+        "mockResizeObserver.ts",
+        "mockSentryBrowser.ts",
+        "mockUniqueId.ts",
+        "reactCleanup.ts",
+        "setLinkComponentForTest.ts",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//:node_modules/@peculiar/webcrypto",
+        "//:node_modules/@sentry/browser",
+        "//:node_modules/@sourcegraph/wildcard",
+        "//:node_modules/@testing-library/react",
+        "//:node_modules/@types/node",
+        "//:node_modules/@types/react",
         "//:node_modules/jest-environment-jsdom",
         "//:node_modules/node-fetch",
+        "//:node_modules/react",
+        "//:node_modules/react-router",  #TODO: indirect?
+        "//:node_modules/react-spring",  #TODO: indirect?
+        "//:node_modules/react-visibility-sensor",
+        "//:node_modules/resize-observer-polyfill",
     ],
 )

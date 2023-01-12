@@ -93,11 +93,11 @@ def sass(name, srcs, deps = [], **kwargs):
     )
 
 def jest_test(name, config = "jest.config.js", data = [], **kwargs):
-    data = data + ["//:jest_config"]
+    data = data + ["//:jest_config-deps"]
 
     _jest_test(
         name = name,
-        config = config,
+        config = "//:jest_config",
         data = data,
         **kwargs
     )

@@ -4,6 +4,9 @@ const path = require('path')
 const semver = require('semver')
 const logger = require('signale')
 
+// TODO(bazel): drop when non-bazel removed.
+const IS_BAZEL = !!process.env.BAZEL_TEST
+
 /** @type {import('@babel/core').ConfigFunction} */
 module.exports = api => {
   const isTest = api.env('test')
