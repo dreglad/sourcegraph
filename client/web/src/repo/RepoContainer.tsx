@@ -54,8 +54,8 @@ import {
     RepoRevisionContainerRoute,
 } from './RepoRevisionContainer'
 import { commitsPath, compareSpecPath } from './routes'
-// import { RepoSettingsContainerContext } from './settings/RepoSettingsContainer'
 import { RepoSettingsAreaRoute } from './settings/RepoSettingsArea'
+import { RepoSettingsContainerContext, RepoSettingsContainerRoute } from './settings/RepoSettingsContainer'
 import { RepoSettingsSideBarGroup } from './settings/RepoSettingsSidebar'
 
 import { redirectToExternalHost } from '.'
@@ -130,7 +130,7 @@ interface RepoContainerProps
         CodeInsightsProps,
         NotebookProps {
     repoContainerRoutes: readonly RepoContainerRoute[]
-    repoSettingsContainerRoutes: readonly RepoContainerRoute[]
+    repoSettingsContainerRoutes: readonly RepoSettingsContainerRoute[]
     repoRevisionContainerRoutes: readonly RepoRevisionContainerRoute[]
     repoHeaderActionButtons: readonly RepoHeaderActionButton[]
     repoSettingsAreaRoutes: readonly RepoSettingsAreaRoute[]
@@ -305,8 +305,8 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
     // if revision for given repo does not resolve then we still proceed to render settings routes
     const repoSettingsOnly = isRevisionNotFoundErrorLike(repoOrError)
 
-    //if (isError && !repoSettingsOnly) {
-    if (isError) {
+    if (isError && !repoSettingsOnly) {
+    //if (isError) {
         return (
             <RepoContainerError
                 repoName={repoName}
@@ -388,21 +388,21 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
 
     const getRepoSettingsContainerContextRoutes = (): (false | JSX.Element)[] | null => {
         if (repoOrError) {
-            // const repoSettingsContainerContext: RepoSettingsContainerContext = {
+            const repoSettingsContainerContext: RepoSettingsContainerContext = {
+                ...repoRevisionContainerContext,
+                // repo,
+                // resolvedRevisionOrError,
+                onDidUpdateExternalLinks: setExternalLinks,
+                repoName,
+            }
+
+            // const repoContainerContext: RepoContainerContext = {
             //     ...repoRevisionContainerContext,
-            //     // repo,
+            //     repo,
             //     resolvedRevisionOrError,
             //     onDidUpdateExternalLinks: setExternalLinks,
             //     repoName,
             // }
-
-            const repoContainerContext: RepoContainerContext = {
-                ...repoRevisionContainerContext,
-                repo,
-                resolvedRevisionOrError,
-                onDidUpdateExternalLinks: setExternalLinks,
-                repoName,
-            }
 
             return [
                 // <Route
@@ -426,12 +426,12 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                     ({ path, render, exact, condition = () => true }) =>
                         (
                             <Route
-                                path={repoContainerContext.routePrefix + path}
+                                path={repoSettingsContainerContext.routePrefix + path}
                                 key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490
                                 exact={exact}
                                 render={routeComponentProps =>
                                     render({
-                                        ...repoContainerContext,
+                                        ...repoSettingsContainerContext,
                                         ...routeComponentProps,
                                     })
                                 }

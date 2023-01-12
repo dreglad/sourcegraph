@@ -65,6 +65,7 @@ import type { OrgSettingsAreaRoute } from './org/settings/OrgSettingsArea'
 import type { OrgSettingsSidebarItems } from './org/settings/OrgSettingsSidebar'
 import { createPlatformContext } from './platform/context'
 import type { RepoContainerRoute } from './repo/RepoContainer'
+import type { RepoSettingsContainerRoute } from './repo/settings/RepoSettingsContainer'
 import type { RepoHeaderActionButton } from './repo/RepoHeader'
 import type { RepoRevisionContainerRoute } from './repo/RepoRevisionContainer'
 import type { RepoSettingsAreaRoute } from './repo/settings/RepoSettingsArea'
@@ -113,7 +114,7 @@ export interface SourcegraphWebAppProps
     orgAreaHeaderNavItems: readonly OrgAreaHeaderNavItem[]
     orgAreaRoutes: readonly OrgAreaRoute[]
     repoContainerRoutes: readonly RepoContainerRoute[]
-    repoSettingsContainerRoutes: readonly RepoContainerRoute[]
+    repoSettingsContainerRoutes: readonly RepoSettingsContainerRoute[]
     repoRevisionContainerRoutes: readonly RepoRevisionContainerRoute[]
     repoHeaderActionButtons: readonly RepoHeaderActionButton[]
     repoSettingsAreaRoutes: readonly RepoSettingsAreaRoute[]

@@ -11,11 +11,10 @@ import { ActionItemsBarProps } from '../extensions/components/ActionItemsBar'
 import type { RepositoryCommitsPageProps } from './commits/RepositoryCommitsPage'
 import { RepoRevisionWrapper } from './components/RepoRevision'
 import { RepoContainerRoute } from './RepoContainer'
+import { RepoSettingsContainerRoute } from "./settings/RepoSettingsContainer";
 import { RepoRevisionContainerContext, RepoRevisionContainerRoute } from './RepoRevisionContainer'
 import { RepositoryFileTreePageProps } from './RepositoryFileTreePage'
 import { RepositoryTagTab } from './tree/TagTab'
-import {RepoSettingsContainerRoute} from "./settings/RepoSettingsContainer";
-//import {RepoSettingsAreaRoute} from "./settings/RepoSettingsArea";
 
 const RepositoryCommitsPage = lazyComponent(() => import('./commits/RepositoryCommitsPage'), 'RepositoryCommitsPage')
 
@@ -93,7 +92,7 @@ export const repoContainerRoutes: readonly RepoContainerRoute[] = [
     },
 ]
 
-export const repoSettingsContainerRoutes: readonly RepoContainerRoute[] = [
+export const repoSettingsContainerRoutes: readonly RepoSettingsContainerRoute[] = [
     {
         path: '/-/settings',
         render: context => <RepoSettingsArea {...context} />,

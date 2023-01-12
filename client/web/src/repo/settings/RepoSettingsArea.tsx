@@ -16,7 +16,7 @@ import { useObservable, ErrorMessage } from '@sourcegraph/wildcard'
 import { AuthenticatedUser } from '../../auth'
 import { BreadcrumbSetters } from '../../components/Breadcrumbs'
 import { HeroPage } from '../../components/HeroPage'
-import { RepositoryFields, SettingsAreaRepositoryFields } from '../../graphql-operations'
+import { SettingsAreaRepositoryFields } from '../../graphql-operations'
 import { RouteDescriptor } from '../../util/contributions'
 
 import { fetchSettingsAreaRepository } from './backend'
@@ -42,7 +42,7 @@ interface Props extends RouteComponentProps<{}>, BreadcrumbSetters, ThemeProps, 
     repoSettingsAreaRoutes: readonly RepoSettingsAreaRoute[]
     repoSettingsSidebarGroups: RepoSettingsSideBarGroups
     // repo: RepositoryFields | undefined
-    repo: RepositoryFields
+    //repo: RepositoryFields
     repoName: string
     authenticatedUser: AuthenticatedUser | null
 }

@@ -5,6 +5,7 @@ import { lazyComponent } from '@sourcegraph/shared/src/util/lazyComponent'
 import { RepoContainerRoute } from '../../repo/RepoContainer'
 import { RepoRevisionContainerRoute } from '../../repo/RepoRevisionContainer'
 import { repoContainerRoutes, repoSettingsContainerRoutes, repoRevisionContainerRoutes } from '../../repo/routes'
+import { RepoSettingsContainerRoute } from '../../repo/settings/RepoSettingsContainer'
 
 const RepositoryCodeIntelArea = lazyComponent(
     () => import('../codeintel/repo/RepositoryCodeIntelArea'),
@@ -37,6 +38,6 @@ export const enterpriseRepoContainerRoutes: readonly RepoContainerRoute[] = [
     },
 ]
 
-export const enterpriseRepoSettingsContainerRoutes: readonly RepoContainerRoute[] = repoSettingsContainerRoutes
+export const enterpriseRepoSettingsContainerRoutes: readonly RepoSettingsContainerRoute[] = repoSettingsContainerRoutes
 
 export const enterpriseRepoRevisionContainerRoutes: readonly RepoRevisionContainerRoute[] = repoRevisionContainerRoutes
