@@ -11,7 +11,7 @@ import { ActionItemsBarProps } from '../extensions/components/ActionItemsBar'
 import type { RepositoryCommitsPageProps } from './commits/RepositoryCommitsPage'
 import { RepoRevisionWrapper } from './components/RepoRevision'
 import { RepoContainerRoute } from './RepoContainer'
-import { RepoSettingsContainerRoute } from "./settings/RepoSettingsContainer";
+import { RepoSettingsContainerRoute } from './settings/RepoSettingsContainer'
 import { RepoRevisionContainerContext, RepoRevisionContainerRoute } from './RepoRevisionContainer'
 import { RepositoryFileTreePageProps } from './RepositoryFileTreePage'
 import { RepositoryTagTab } from './tree/TagTab'
