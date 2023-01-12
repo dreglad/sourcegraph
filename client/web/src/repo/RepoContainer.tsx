@@ -82,7 +82,6 @@ export interface RepoContainerContext
         CodeIntelligenceProps,
         BatchChangesProps,
         CodeInsightsProps {
-    //repo: RepositoryFields | undefined
     repo: RepositoryFields
     repoName: string
     resolvedRevisionOrError: ResolvedRevision | ErrorLike | undefined
@@ -303,10 +302,11 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
     const isError = isErrorLike(repoOrError) || isErrorLike(resolvedRevisionOrError)
 
     // if revision for given repo does not resolve then we still proceed to render settings routes
-    const repoSettingsOnly = isRevisionNotFoundErrorLike(repoOrError)
+    // while returning empty repository for all other routes
+    const isEmptyRepo = isRevisionNotFoundErrorLike(repoOrError)
 
-    if (isError && !repoSettingsOnly) {
-        //if (isError) {
+    // for errors beyond empty repository we defer to RepoContainerError for all routes
+    if (isError && !isEmptyRepo) {
         return (
             <RepoContainerError
                 repoName={repoName}
@@ -335,7 +335,7 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
         repo,
         repoName,
         revision: revision || '',
-        resolvedRevision: resolvedRevision,
+        resolvedRevision,
         routePrefix: repoMatchURL,
         useActionItemsBar,
     }
@@ -376,10 +376,8 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                     <Route key="hardcoded-key" component={RepoPageNotFound} />,
                 ]
             }
-            //if (repoSettingsOnly) {
             // We cannot render these routes for an empty repository
             return [<Route key="hardcoded-key" component={EmptyRepo} />]
-            //}
         }
 
         return null
@@ -531,7 +529,7 @@ export const RepoContainer: React.FunctionComponent<React.PropsWithChildren<Repo
                             '/-/home',
                         ].map(
                             routePath =>
-                                !repoSettingsOnly && ( // must be non-empty repo to resolve a revision
+                                !isEmptyRepo && ( // must be non-empty repo to resolve a revision
                                     <Route
                                         path={`${repoMatchURL}${routePath}`}
                                         key="hardcoded-key" // see https://github.com/ReactTraining/react-router/issues/4578#issuecomment-334489490

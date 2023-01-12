@@ -1,25 +1,25 @@
-import { HoverThresholdProps } from '../RepoContainer'
-import { BatchChangesProps } from '../../batches'
-import { ExternalLinkFields } from '../../graphql-operations'
-import { BreadcrumbSetters } from '../../components/Breadcrumbs'
-// import { ResolvedRevision } from '../backend';
-import { CodeIntelligenceProps } from '../../codeintel'
-import { StreamingSearchResultsListProps } from '@sourcegraph/search-ui/out/src'
-// import { ErrorLike } from '@storybook/client-api';
+import { StreamingSearchResultsListProps } from '@sourcegraph/search-ui'
+import { ExtensionsControllerProps } from '@sourcegraph/shared/src/extensions/controller'
+import { PlatformContextProps } from '@sourcegraph/shared/src/platform/context'
+import { SearchContextProps } from '@sourcegraph/shared/src/search'
+import { SettingsCascadeProps } from '@sourcegraph/shared/src/settings/settings'
+import { TelemetryProps } from '@sourcegraph/shared/src/telemetry/telemetryService'
+import { ThemeProps } from '@sourcegraph/shared/src/theme'
+
 import { AuthenticatedUser } from '../../auth'
+import { BatchChangesProps } from '../../batches'
+import { CodeIntelligenceProps } from '../../codeintel'
+import { BreadcrumbSetters } from '../../components/Breadcrumbs'
+import { ActionItemsBarProps } from '../../extensions/components/ActionItemsBar'
+import { ExternalLinkFields } from '../../graphql-operations'
 import { CodeInsightsProps } from '../../insights/types'
 import { SearchStreamingProps } from '../../search'
-import { SettingsCascadeProps } from '@sourcegraph/shared/out/src/settings/settings'
-import { ActionItemsBarProps } from '../../extensions/components/ActionItemsBar'
-import { PlatformContextProps } from '@sourcegraph/shared/out/src/platform/context'
+import { RouteDescriptor } from '../../util/contributions'
+import { HoverThresholdProps } from '../RepoContainer'
 import { RepoHeaderContributionsLifecycleProps } from '../RepoHeader'
-import { TelemetryProps } from '@sourcegraph/shared/out/src/telemetry/telemetryService'
-import { ExtensionsControllerProps } from '@sourcegraph/shared/out/src/extensions/controller'
+
 import { RepoSettingsAreaRoute } from './RepoSettingsArea'
 import { RepoSettingsSideBarGroup } from './RepoSettingsSidebar'
-import { RouteDescriptor } from '../../util/contributions'
-import { SearchContextProps } from '@sourcegraph/shared/out/src/search'
-import { ThemeProps } from '@sourcegraph/shared/out/src/theme'
 
 export interface RepoSettingsContainerRoute extends RouteDescriptor<RepoSettingsContainerContext> {}
 
