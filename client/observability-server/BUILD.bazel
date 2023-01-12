@@ -14,8 +14,8 @@ ts_project(
         "src/webBundleSize/index.ts",
     ],
     deps = [
+        ":node_modules/@sourcegraph/build-config",
         "//:node_modules/@opentelemetry/semantic-conventions",
-        "//:node_modules/@sourcegraph/build-config",
         "//:node_modules/@types/glob",
         "//:node_modules/@types/lodash",
         "//:node_modules/@types/node",

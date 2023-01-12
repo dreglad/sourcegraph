@@ -40,6 +40,7 @@ ts_project(
         "src/types/@opentelemetry/semantic-conventions/index.d.ts",
     ],
     deps = [
+        ":node_modules/@sourcegraph/common",
         "//:node_modules/@opentelemetry/api",
         "//:node_modules/@opentelemetry/core",
         "//:node_modules/@opentelemetry/exporter-trace-otlp-http",
@@ -48,8 +49,6 @@ ts_project(
         "//:node_modules/@opentelemetry/sdk-trace-base",
         "//:node_modules/@opentelemetry/sdk-trace-web",
         "//:node_modules/@opentelemetry/semantic-conventions",
-        "//:node_modules/@sourcegraph/common",
-        "//:node_modules/@types/is-absolute-url",
         "//:node_modules/@types/lodash",
         "//:node_modules/@types/react",
         "//:node_modules/is-absolute-url",

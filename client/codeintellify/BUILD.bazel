@@ -19,7 +19,7 @@ ts_project(
     ],
     # TODO(bazel): "#keep"s required for type-only imports
     deps = [
-        "//:node_modules/@sourcegraph/common",
+        ":node_modules/@sourcegraph/common",
         "//:node_modules/@sourcegraph/extension-api-types",  #keep
         "//:node_modules/@types/lodash",
         "//:node_modules/lodash",
@@ -48,7 +48,7 @@ ts_project(
     ],
     deps = [
         ":codeintellify_lib",
-        "//:node_modules/@sourcegraph/common",
+        ":node_modules/@sourcegraph/common",
         "//:node_modules/@types/lodash",
         "//:node_modules/@types/node",
         "//:node_modules/lodash",

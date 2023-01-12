@@ -310,6 +310,7 @@ ts_project(
     # TODO(bazel): "#keep"s required for type-only imports
     deps = [
         ":module_style_typings",
+        ":node_modules/@sourcegraph/common",
         "//:node_modules/@mdi/js",
         "//:node_modules/@reach/auto-id",
         "//:node_modules/@reach/combobox",
@@ -318,7 +319,6 @@ ts_project(
         "//:node_modules/@reach/tabs",
         "//:node_modules/@reach/visually-hidden",
         "//:node_modules/@react-aria/live-announcer",
-        "//:node_modules/@sourcegraph/common",
         "//:node_modules/@types/classnames",
         "//:node_modules/@types/d3-format",
         "//:node_modules/@types/d3-scale",  #keep
@@ -326,7 +326,6 @@ ts_project(
         "//:node_modules/@types/d3-time-format",
         "//:node_modules/@types/d3-voronoi",  #keep
         "//:node_modules/@types/history",  #keep
-        "//:node_modules/@types/is-absolute-url",
         "//:node_modules/@types/lodash",
         "//:node_modules/@types/node",  #keep
         "//:node_modules/@types/react",
@@ -430,14 +429,12 @@ ts_project(
         "src/utils/linkClickHandler.test.tsx",
     ],
     deps = [
+        ":node_modules/@sourcegraph/testing",
         ":wildcard_lib",
         "//:node_modules/@mdi/js",
-        "//:node_modules/@sourcegraph/testing",
-        "//:node_modules/@sourcegraph/wildcard",
         "//:node_modules/@storybook/react",  #keep
         "//:node_modules/@testing-library/react",
         "//:node_modules/@testing-library/user-event",
-        "//:node_modules/@types/expect",
         "//:node_modules/@types/history",
         "//:node_modules/@types/node",
         "//:node_modules/@types/react",

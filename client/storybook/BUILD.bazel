@@ -36,8 +36,8 @@ ts_project(
     # TODO(bazel): "#keep"s required for type-only imports
     deps = [
         ":module_style_typings",
-        "//:node_modules/@sourcegraph/build-config",
-        "//:node_modules/@sourcegraph/wildcard",
+        ":node_modules/@sourcegraph/build-config",
+        ":node_modules/@sourcegraph/wildcard",
         "//:node_modules/@storybook/addon-actions",
         "//:node_modules/@storybook/addon-console",
         "//:node_modules/@storybook/addons",  #keep
@@ -72,7 +72,7 @@ ts_project(
     srcs = ["src/coverage.test.ts"],
     # TODO(bazel): "#keep"s required for type-only imports
     deps = [
-        "//:node_modules/@sourcegraph/shared",
+        ":node_modules/@sourcegraph/shared",
         "//:node_modules/@storybook/addon-storyshots",
         "//:node_modules/@storybook/addon-storyshots-puppeteer",
         "//:node_modules/@types/node",
