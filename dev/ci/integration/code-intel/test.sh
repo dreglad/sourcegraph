@@ -26,6 +26,21 @@ popd
 
 pushd dev/codeintel-qa
 
+# TEMP HACK
+TEMP=$(mktemp -d -t sgdockerbuild_XXXXXXX)
+cleanup() {
+  rm -rf "$TEMP"
+}
+trap cleanup EXIT
+pushd "$TEMP"
+git clone git@github.com:sourcegraph/src-cli.git
+pushd src-cli
+git checkout 333e870d896fc3e7d9c5297051716d0fbf51efc8
+go install ./cmd/src
+popd
+popd
+# TEMP HACK
+
 echo "--- :brain: Running the test suite"
 echo '--- :zero: downloading test data from GCS'
 go run ./cmd/download
