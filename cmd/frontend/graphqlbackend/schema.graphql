@@ -8274,7 +8274,7 @@ enum BackgroundRoutineType {
     """
     DB-backed worker
     """
-    DB_BACKED_WORKER
+    DB_BACKED
 
     """
     Custom routine
