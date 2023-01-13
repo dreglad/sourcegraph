@@ -52,6 +52,12 @@ echo DDD
 pwd
 echo EEE
 
+sleep 999999
+
+# In Buildkite, we're running in a Docker container, so `docker run -v` needs to refer to a
+# directory on our Docker host, not in our container.
+DOCKER_VOLUME_SOURCE=${BUILDKITE_BUILD_CHECKOUT_PATH-$ROOTDIR}
+
 docker run --rm --privileged -it \
        -v "$BUILDKITE_BUILD_CHECKOUT_PATH":/go/src/github.com/sourcegraph/sourcegraph \
        -w /go/src/github.com/sourcegraph/sourcegraph \
