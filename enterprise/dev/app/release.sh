@@ -42,6 +42,8 @@ ls -al enterprise/dev/app
 echo AAAAAAAAAAAA
 mount
 echo CCC
+echo ZZZZZZZZZZZZZZZZZZZZZZZ
+ls -alh $BUILDKITE_BUILD_CHECKOUT_PATH
 echo AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 env
 echo AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -51,7 +53,7 @@ pwd
 echo EEE
 
 docker run --rm --privileged -it \
-       -v "$ROOTDIR":/go/src/github.com/sourcegraph/sourcegraph \
+       -v "$BUILDKITE_BUILD_CHECKOUT_PATH":/go/src/github.com/sourcegraph/sourcegraph \
        -w /go/src/github.com/sourcegraph/sourcegraph \
        alpine:latest sh -c 'pwd && mount && ls -al && ls -al enterprise/dev/app && echo && echo && cat enterprise/dev/app/goreleaser.yaml'
 
