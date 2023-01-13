@@ -6,8 +6,11 @@ ROOTDIR="$(realpath $(dirname "${BASH_SOURCE[0]}")/../../..)"
 GORELEASER_CROSS_VERSION=v1.19.5
 GCLOUD_APP_CREDENTIALS_FILE=${GCLOUD_APP_CREDENTIALS_FILE-$HOME/.config/gcloud/application_default_credentials.json}
 
+# TODO(sqs): REMOVE!!!!!!!!
+export SKIP_BUILD_WEB=1
+
 if [ -z "${SKIP_BUILD_WEB-}" ]; then
-  echo ENTERPRISE=1 pnpm run build-web
+  ENTERPRISE=1 pnpm run build-web
 fi
 
 if [ -z "${GITHUB_TOKEN-}" ]; then
@@ -34,9 +37,19 @@ fi
 # (https://github.com/sourcegraph/sourcegraph/issues/46404).
 GORELEASER_CURRENT_TAG=$VERSION
 
-exec docker run --rm --privileged \
+echo AAAAAAAAAAAA
+ls -al enterprise/dev/app
+echo AAAAAAAAAAAA
+
+docker run --rm -it \
        -v "$ROOTDIR":/go/src/github.com/sourcegraph/sourcegraph \
-       -v /var/run/docker.sock:/var/run/docker.sock \
+       -w /go/src/github.com/sourcegraph/sourcegraph \
+       alpine:latest sh -c 'ls -al enterprise/dev/app && echo && echo && cat enterprise/dev/app/goreleaser.yaml'
+
+echo BBBBBBBBBBBBB
+
+exec docker run --rm \
+       -v "$ROOTDIR":/go/src/github.com/sourcegraph/sourcegraph \
        -w /go/src/github.com/sourcegraph/sourcegraph \
        -v "$GCLOUD_APP_CREDENTIALS_FILE":/root/.config/gcloud/application_default_credentials.json \
        -e "GITHUB_TOKEN=$GITHUB_TOKEN" \
