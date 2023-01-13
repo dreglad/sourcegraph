@@ -40,16 +40,17 @@ GORELEASER_CURRENT_TAG=$VERSION
 echo AAAAAAAAAAAA
 ls -al enterprise/dev/app
 echo AAAAAAAAAAAA
+mount
 echo CCC
 echo $ROOTDIR
 echo DDD
 pwd
 echo EEE
 
-docker run --rm -it \
+docker run --rm --privileged -it \
        -v "$ROOTDIR":/go/src/github.com/sourcegraph/sourcegraph \
        -w /go/src/github.com/sourcegraph/sourcegraph \
-       alpine:latest sh -c 'pwd && ls -al && ls -al enterprise/dev/app && echo && echo && cat enterprise/dev/app/goreleaser.yaml'
+       alpine:latest sh -c 'pwd && mount && ls -al && ls -al enterprise/dev/app && echo && echo && cat enterprise/dev/app/goreleaser.yaml'
 
 echo BBBBBBBBBBBBB
 
